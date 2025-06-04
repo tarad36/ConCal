@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Analyzer & Timeline Generator - Real Estate Professional Tool</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/feather-icons"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Tailwind shadow-lg */
+            padding: 1.5rem; /* Tailwind p-6 */
+            margin-bottom: 1.5rem; /* Tailwind mb-6 */
+        }
+        .label {
+            display: block;
+            margin-bottom: 0.5rem; /* Tailwind mb-2 */
+            font-weight: 500; /* Tailwind font-medium */
+            color: #374151; /* Tailwind text-gray-700 */
+        }
+        .input, .textarea, .select {
+            width: 100%;
+            padding: 0.75rem; /* Tailwind p-3 */
+            border: 1px solid #D1D5DB; /* Tailwind border-gray-300 */
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+            box-shadow: inset 0 1px 2px 0 rgba(0,0,0,0.05); /* Tailwind shadow-sm */
+        }
+        .input:focus, .textarea:focus, .select:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            border-color: #3b82f6; /* Tailwind focus:border-brand-500 */
+            box-shadow: 0 0 0 2px #3b82f6; /* Tailwind focus:ring-brand-500 */
+        }
+        .button {
+            padding: 0.75rem 1.5rem; /* Tailwind py-3 px-6 */
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+            font-weight: 600; /* Tailwind font-semibold */
+            color: white;
+            background-color: #3b82f6; /* Tailwind bg-brand-500 */
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem; /* Tailwind space-x-2 */
+        }
+        .button:hover {
+            background-color: #2563eb; /* Tailwind hover:bg-brand-600 */
+        }
+        .button-secondary {
+            background-color: #6b7280; /* Tailwind bg-gray-500 */
+        }
+        .button-secondary:hover {
+            background-color: #4b5563; /* Tailwind hover:bg-gray-600 */
+        }
+        .results-section h3 {
+            font-size: 1.25rem; /* Tailwind text-xl */
+            font-weight: 600; /* Tailwind font-semibold */
+            margin-bottom: 1rem; /* Tailwind mb-4 */
+            color: #1d4ed8; /* Tailwind text-brand-700 */
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* For feather icons alignment */
+        .feather {
+            width: 1em;
+            height: 1em;
+            vertical-align: middle;
+            stroke-width: 2;
+        }
+        #extractedDataTable th, #extractedDataTable td {
+            border: 1px solid #e5e7eb; /* Tailwind border-gray-200 */
+            padding: 0.75rem; /* Tailwind p-3 */
+            text-align: left;
+        }
+        #extractedDataTable th {
+            background-color: #f9fafb; /* Tailwind bg-gray-50 */
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand': {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        },
+                        'success': {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                        },
+                        'warning': {
+                            50: '#fffbeb',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                        },
+                        'error': {
+                            50: '#fef2f2',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-brand-600 text-white p-4 shadow-md">
+        <div class="container mx-auto">
+            <h1 class="text-2xl font-bold">Contract Timeline App</h1>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 md:p-8">
+        <div class="card bg-yellow-50 border border-yellow-300 mb-6">
+            <h2 class="text-lg font-semibold text-yellow-700 flex items-center">
+                <i data-feather="alert-triangle" class="mr-2"></i>Important Note for App Owner
+            </h2>
+            <p class="text-yellow-700 mt-2">
+                To use this application, you must insert your Google Gemini API Key directly into the JavaScript code.
+                Search for `<strong>YOUR_API_KEY_HERE</strong>` in the script section of this HTML file and replace it with your valid API key.
+            </p>
+            <p class="text-sm text-yellow-600 mt-2">
+                <strong>Security Warning:</strong> Embedding API keys in client-side code is not secure for public applications.
+                This key will be visible to anyone inspecting the page source. Use this method only for personal or trusted internal use.
+            </p>
+        </div>
+
+
+        <form id="contractForm" class="grid md:grid-cols-2 gap-6">
+            <div class="card">
+                <h2 class="text-xl font-semibold mb-4 text-brand-700 flex items-center">
+                    <i data-feather="file-text" class="mr-2"></i>Contract Details
+                </h2>
+                
+                <div>
+                    <label for="contractFile" class="label">1. Upload Contract PDF:</label>
+                    <input type="file" id="contractFile" class="input" accept=".pdf" required>
+                    <p class="text-xs text-gray-500 mt-1">Max file size: 10MB. Only PDF files are accepted.</p>
+                </div>
+
+                <div class="mt-4">
+                    <label for="clientNames" class="label">2. Client Name(s):</label>
+                    <input type="text" id="clientNames" class="input" placeholder="e.g., John Doe & Jane Smith" required>
+                </div>
+                
+                <div class="mt-4">
+                    <label for="agentName" class="label">3. Your Name (Agent):</label>
+                    <input type="text" id="agentName" class="input" placeholder="e.g., Your Name" required>
+                </div>
+
+                <div class="mt-4">
+                    <label for="propertyAddressOptional" class="label">4. Property Address (Optional - if not clear in PDF):</label>
+                    <input type="text" id="propertyAddressOptional" class="input" placeholder="e.g., 123 Main St, Anytown, USA">
+                </div>
+                
+                <div class="mt-6">
+                    <button type="submit" id="analyzeButton" class="button w-full md:w-auto">
+                        <i data-feather="zap" class="feather"></i> Analyze Contract
+                    </button>
+                </div>
+            </div>
+
+            <div class="card bg-brand-50">
+                 <h2 class="text-xl font-semibold mb-4 text-brand-700 flex items-center">
+                    <i data-feather="info" class="mr-2"></i>How it Works
+                </h2>
+                <p class="text-gray-700 mb-2">
+                    1.  <strong class="text-brand-600">Upload PDF:</strong> Select the real estate contract (PDF format).
+                </p>
+                <p class="text-gray-700 mb-2">
+                    2.  <strong class="text-brand-600">Enter Info:</strong> Provide client and your names.
+                </p>
+                <p class="text-gray-700 mb-2">
+                    3.  <strong class="text-brand-600">Analyze:</strong> Click "Analyze Contract". The AI will extract key dates and information.
+                </p>
+                <p class="text-gray-700">
+                    4.  <strong class="text-brand-600">Get Results:</strong> Review the generated client email and calendar event links.
+                </p>
+                <p class="text-sm text-gray-500 mt-4">
+                    This tool uses AI to process your contract. Ensure your PDF is clear and legible for best results.
+                    No contract content is stored by this application after processing.
+                </p>
+            </div>
+        </form>
+
+        <div id="statusSection" class="my-4 text-center">
+            <div id="loader" class="loader hidden"></div>
+            <p id="statusMessage" class="text-gray-700 font-medium"></p>
+        </div>
+
+        <div id="resultsArea" class="hidden">
+            <div class="card results-section" id="extractedInfoSection">
+                <h3 class="flex items-center"><i data-feather="list" class="mr-2"></i>Extracted Information</h3>
+                <div id="extractedContractData" class="prose max-w-none">
+                    <p><strong>Property Address:</strong> <span id="displayPropertyAddress"></span></p>
+                    <p><strong>Summary:</strong> <span id="displayContractSummary"></span></p>
+                    <h4 class="font-semibold mt-3 mb-2">Key Dates:</h4>
+                    <table id="extractedDataTable" class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keyDatesTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card results-section" id="emailSection">
+                <h3 class="flex items-center"><i data-feather="mail" class="mr-2"></i>Generated Client Email</h3>
+                <textarea id="emailPreview" class="textarea" rows="15" readonly></textarea>
+                <button id="copyEmailButton" class="button mt-2">
+                    <i data-feather="copy" class="feather"></i> Copy Email
+                </button>
+            </div>
+
+            <div class="card results-section" id="calendarSection">
+                <h3 class="flex items-center"><i data-feather="calendar" class="mr-2"></i>Calendar Event Links</h3>
+                <div id="calendarLinks" class="space-y-2">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-8 text-gray-600 text-sm">
+        Contract Timeline App - For Real Estate Professionals
+    </footer>
+
+<script>
+// --- Class Definitions FIRST ---
+
+// --- Simulating contract-analyzer.js ---
+class ContractAnalyzer {
+    constructor() {
+        this.apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
+        // IMPORTANT: Replace 'YOUR_API_KEY_HERE' with your actual Gemini API Key.
+        this.apiKey = 'AIzaSyAE5uPPDD4y4IsQWghKqZfPR0i3hzx9GA0'; // Generic placeholder
+    }
+
+    async callGeminiAPI(prompt, base64File) {
+        if (this.apiKey === 'YOUR_API_KEY_HERE' || !this.apiKey) {
+            throw new Error('Gemini API key is not configured. Please edit the script and replace "YOUR_API_KEY_HERE" with your actual key.');
+        }
+        // ... rest of the function ...
+        const requestBody = {
+            contents: [{
+                parts: [
+                    { text: prompt },
+                    {
+                        inline_data: {
+                            mime_type: "application/pdf",
+                            data: base64File
+                        }
+                    }
+                ]
+            }],
+            generationConfig: {
+                temperature: 0.1,
+                topK: 32,
+                topP: 1,
+                maxOutputTokens: 4096,
+            }
+        };
+
+        try {
+            const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: { message: 'Unknown API error structure' } }));
+                console.error('API Error Data:', errorData);
+                let errorMessage = `API request failed: ${response.status} ${response.statusText}.`;
+                if (errorData.error && errorData.error.message) {
+                    errorMessage += ` ${errorData.error.message}`;
+                }
+                if (errorMessage.toLowerCase().includes('api key not valid') || response.status === 400 && errorMessage.toLowerCase().includes('api key not valid')) {
+                     throw new Error('Invalid API key. Please check your Gemini API key in the script. Ensure it is enabled for the Gemini API.');
+                } else if (errorMessage.includes('QUOTA_EXCEEDED') || response.status === 429) {
+                    throw new Error('API quota exceeded. Please check your Gemini API usage limits.');
+                }
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+            
+            if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0].text) {
+                console.error('Invalid response structure:', data);
+                throw new Error('Invalid response format from AI service. Expected text part missing.');
+            }
+            return data.candidates[0].content.parts[0].text;
+            
+        } catch (error) {
+            console.error('Gemini API Error:', error);
+            if (error.message.toLowerCase().includes('api key not valid')) {
+                 throw new Error('Invalid API key. Please check your Gemini API key in the script. Ensure it is enabled for the Gemini API.');
+            } else if (error.message.includes('QUOTA_EXCEEDED')) {
+                throw new Error('API quota exceeded. Please check your Gemini API usage limits.');
+            } else if (error.name === 'TypeError' && error.message.toLowerCase().includes('failed to fetch')) {
+                throw new Error('Network error. Please check your internet connection and ensure the API endpoint is correct and reachable.');
+            }
+            throw error; 
+        }
+    }
+}
+
+// --- Simulating calendar-utils.js ---
+class CalendarUtils {
+    constructor() {}
+
+    prepareEventDetails(eventData, propertyAddress) {
+        const formatDateForCalendar = (dateStr) => {
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return null; 
+                const year = date.getUTCFullYear();
+                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(date.getUTCDate()).padStart(2, '0');
+                return `${year}${month}${day}`;
+            } catch (e) {
+                console.error("Error formatting date:", dateStr, e);
+                return null;
+            }
+        };
+
+        const startDate = formatDateForCalendar(eventData.date);
+        if (!startDate) return null;
+
+        const dateObj = new Date(eventData.date);
+        dateObj.setUTCDate(dateObj.getUTCDate() + 1); 
+        const endDate = formatDateForCalendar(dateObj.toISOString().split('T')[0]);
+
+
+        return {
+            title: `${eventData.name} - ${propertyAddress}`,
+            startDate: startDate, 
+            endDate: endDate,     
+            description: `Regarding property: ${propertyAddress}.\nEvent: ${eventData.name}`,
+            location: propertyAddress,
+        };
+    }
+
+    generateGoogleCalendarLink(details) {
+        if (!details || !details.startDate) return '#';
+        const base = 'https://www.google.com/calendar/render?action=TEMPLATE';
+        const params = new URLSearchParams({
+            text: details.title,
+            dates: `${details.startDate}/${details.endDate || details.startDate}`,
+            details: details.description,
+            location: details.location,
+            sf: true, 
+            output: 'xml' 
+        });
+        return `${base}&${params.toString()}`;
+    }
+
+    generateOutlookCalendarLink(details) {
+        if (!details || !details.startDate) return '#';
+        const base = 'https://outlook.live.com/calendar/0/deeplink/compose';
+        const sYear = parseInt(details.startDate.substring(0,4));
+        const sMonth = parseInt(details.startDate.substring(4,6)) -1; 
+        const sDay = parseInt(details.startDate.substring(6,8));
+        const startDateObj = new Date(Date.UTC(sYear, sMonth, sDay));
+
+        let endDateObj = startDateObj;
+        if (details.endDate) {
+            const eYear = parseInt(details.endDate.substring(0,4));
+            const eMonth = parseInt(details.endDate.substring(4,6)) - 1;
+            const eDay = parseInt(details.endDate.substring(6,8));
+            endDateObj = new Date(Date.UTC(eYear, eMonth, eDay));
+        }
+        
+        const params = new URLSearchParams({
+            path: '/calendar/action/compose',
+            rru: 'addevent',
+            subject: details.title,
+            startdt: startDateObj.toISOString(),
+            enddt: endDateObj.toISOString(),
+            body: details.description,
+            location: details.location,
+            allday: "true" 
+        });
+        return `${base}?${params.toString()}`;
+    }
+    
+    generateAppleICalContent(details) {
+        if (!details || !details.startDate) return '';
+        const startDate = details.startDate; 
+        const endDate = details.endDate || startDate; 
+        
+        let iCalEndDate = endDate;
+        if (startDate === endDate) { 
+            const dateObjEnd = new Date(startDate.substring(0,4), parseInt(startDate.substring(4,6))-1, parseInt(startDate.substring(6,8)));
+            dateObjEnd.setDate(dateObjEnd.getDate() + 1);
+            iCalEndDate = `${dateObjEnd.getUTCFullYear()}${String(dateObjEnd.getUTCMonth() + 1).padStart(2, '0')}${String(dateObjEnd.getUTCDate()).padStart(2, '0')}`;
+        }
+
+        const icalContent = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//ContractTimelineApp//EN',
+            'BEGIN:VEVENT',
+            `UID:${new Date().getTime()}@contracttimeline.app`,
+            `DTSTAMP:${new Date().toISOString().replace(/[-:.]/g, '').substring(0,15)}Z`,
+            `DTSTART;VALUE=DATE:${startDate}`, 
+            `DTEND;VALUE=DATE:${iCalEndDate}`,   
+            `SUMMARY:${details.title}`,
+            `DESCRIPTION:${details.description.replace(/\n/g, '\\n')}`,
+            `LOCATION:${details.location}`,
+            'END:VEVENT',
+            'END:VCALENDAR'
+        ].join('\r\n');
+        return `data:text/calendar;charset=utf8,${encodeURIComponent(icalContent)}`;
+    }
+
+    generateYahooCalendarLink(details) {
+        if (!details || !details.startDate) return '#';
+        const st = `${details.startDate}T000000`;
+        
+        const params = new URLSearchParams({
+            v: 60, 
+            title: details.title,
+            st: st, 
+            dur: 'allday', 
+            desc: details.description,
+            in_loc: details.location
+        });
+        return `https://calendar.yahoo.com/?${params.toString()}`;
+    }
+
+    generateAllCalendarLinks(keyDates, propertyAddress) {
+        const allLinks = [];
+        if (!keyDates || !Array.isArray(keyDates)) return allLinks;
+
+        for (const eventData of keyDates) {
+            if (!eventData.name || !eventData.date) continue;
+            
+            const links = {};
+            try {
+                const eventDetails = this.prepareEventDetails(eventData, propertyAddress);
+                if (!eventDetails) continue;
+                
+                links.google = this.generateGoogleCalendarLink(eventDetails);
+                links.outlook = this.generateOutlookCalendarLink(eventDetails);
+                links.apple = this.generateAppleICalContent(eventDetails); 
+                links.yahoo = this.generateYahooCalendarLink(eventDetails);
+                
+                allLinks.push({ eventName: eventData.name, date: eventData.date, links });
+            } catch (error) {
+                console.error(`Error generating calendar links for ${eventData.name}:`, error);
+                allLinks.push({ 
+                    eventName: eventData.name, 
+                    date: eventData.date, 
+                    links: { google: '#', outlook: '#', apple: '#', yahoo: '#' },
+                    error: 'Could not generate links for this event.'
+                });
+            }
+        }
+        return allLinks;
+    }
+}
+
+// --- Simulating email-templates.js ---
+class EmailTemplates {
+    constructor() {}
+
+    getClientEmailTemplate() {
+        return `
+Subject: Congratulations on Going Under Contract for {propertyAddress}! 🎉
+
+Hi {clientNames},
+
+Fantastic news! Congratulations on successfully going under contract for the property at {propertyAddress}! This is a huge step, and I'm so excited for you.
+
+To help keep everything on track, here's a quick overview of the important dates and a brief summary based on the contract:
+
+Property: {propertyAddress}
+
+Contract Snapshot:
+------------------
+{contractSummary}
+
+Key Milestones Ahead:
+---------------------
+{keyDatesList}
+
+Please take a moment to review these dates. I'll also be sending out calendar invitations for these milestones to help you stay organized.
+
+We're in this together! If any questions pop up, or if you just want to chat about the next steps, please don't hesitate to reach out. 
+
+Let's get this done!
+
+Warmly,
+
+{agentName}
+Your Real Estate Partner
+
+---
+Email generated on: {generatedDate}
+This is an automated message to help you stay informed. Always refer to your official contract documents for definitive terms and dates.
+`;
+    }
+
+    formatClientNames(clientNamesStr) {
+        if (!clientNamesStr) return "Valued Client";
+        const names = clientNamesStr.split(/[,&+]| and /i).map(name => name.trim()).filter(Boolean);
+        if (names.length === 0) return "Valued Client";
+        if (names.length === 1) return names[0];
+        return names.slice(0, -1).join(', ') + ' & ' + names.slice(-1);
+    }
+    
+    populateTemplate(template, data) {
+        let populatedTemplate = template;
+        for (const key in data) {
+            const placeholder = `{${key}}`;
+            const value = (key === 'keyDatesList' && Array.isArray(data.keyDates)) ? 
+                            data.keyDates.map(kd => `- ${kd.name}: ${kd.date || 'TBD'}`).join('\n') :
+                          (typeof data[key] === 'string' ? data[key] : JSON.stringify(data[key]));
+            
+            populatedTemplate = populatedTemplate.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value || '');
+        }
+        return populatedTemplate;
+    }
+
+    generateClientEmail(contractData, clientInfo) {
+        const template = this.getClientEmailTemplate();
+        
+        const formattedKeyDates = (contractData.keyDates || []).map(kd => ({
+            name: kd.name || "Unknown Event",
+            date: kd.date ? new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }) : 'To Be Determined'
+        }));
+
+        const emailData = {
+            clientNames: this.formatClientNames(clientInfo.clientNames),
+            propertyAddress: contractData.propertyAddress || clientInfo.propertyAddressOptional || "The Property",
+            agentName: clientInfo.agentName || 'Your Real Estate Agent',
+            keyDatesList: formattedKeyDates.length > 0 ? formattedKeyDates.map(kd => `- ${kd.name}: ${kd.date}`).join('\n') : "Key dates will be confirmed shortly.",
+            keyDates: formattedKeyDates, 
+            contractSummary: contractData.summary || 'Details are being compiled.',
+            generatedDate: new Date().toLocaleDateString('en-US', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            })
+        };
+
+        return this.populateTemplate(template, emailData);
+    }
+}
+
+// --- Main Application Logic (script.js) ---
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded and parsed');
+
+    // Element Sanity Checks
+    const contractForm = document.getElementById('contractForm');
+    const contractFileEl = document.getElementById('contractFile');
+    const clientNamesEl = document.getElementById('clientNames');
+    const agentNameEl = document.getElementById('agentName');
+    const propertyAddressOptionalEl = document.getElementById('propertyAddressOptional');
+    const analyzeButton = document.getElementById('analyzeButton');
+    const loaderEl = document.getElementById('loader');
+    const statusMessageEl = document.getElementById('statusMessage');
+    const resultsAreaEl = document.getElementById('resultsArea');
+    const displayPropertyAddressEl = document.getElementById('displayPropertyAddress');
+    const displayContractSummaryEl = document.getElementById('displayContractSummary');
+    const keyDatesTableBodyEl = document.getElementById('keyDatesTableBody');
+    const emailPreviewEl = document.getElementById('emailPreview');
+    const copyEmailButton = document.getElementById('copyEmailButton');
+    const calendarLinksEl = document.getElementById('calendarLinks');
+
+    const criticalElements = { 
+        contractForm, contractFileEl, clientNamesEl, agentNameEl, analyzeButton, 
+        loaderEl, statusMessageEl, resultsAreaEl, displayPropertyAddressEl, 
+        displayContractSummaryEl, keyDatesTableBodyEl, emailPreviewEl, 
+        copyEmailButton, calendarLinksEl 
+    };
+
+    for (const elName in criticalElements) {
+        if (!criticalElements[elName]) {
+            const errorMsg = `CRITICAL ERROR: HTML Element '${elName}' not found. App cannot function correctly.`;
+            console.error(errorMsg);
+            alert(errorMsg); // Alert user to critical failure
+            // Display error in status message area if available
+            if (statusMessageEl) {
+                statusMessageEl.textContent = errorMsg;
+                statusMessageEl.className = 'text-center font-medium p-2 rounded-md bg-error-50 text-error-600';
+                statusMessageEl.classList.remove('hidden');
+            }
+            return; // Stop script execution if critical elements are missing
+        }
+    }
+    console.log('All critical HTML elements found.');
+
+    // Initialize Classes
+    let contractAnalyzer, calendarUtils, emailTemplates;
+    try {
+        contractAnalyzer = new ContractAnalyzer(); 
+        calendarUtils = new CalendarUtils();
+        emailTemplates = new EmailTemplates();
+        console.log('Utility classes initialized.');
+    } catch (e) {
+        console.error("Error initializing utility classes:", e);
+        alert("A critical error occurred initializing application components. Check the console.");
+        if (statusMessageEl) {
+            statusMessageEl.textContent = "Initialization error. App may not work. " + e.message;
+            statusMessageEl.className = 'text-center font-medium p-2 rounded-md bg-error-50 text-error-600';
+            statusMessageEl.classList.remove('hidden');
+        }
+        return;
+    }
+
+
+    function showStatus(message, type = 'info', duration = 0) {
+        if (!statusMessageEl) { console.error("statusMessageEl not found, cannot show status:", message); return; }
+        statusMessageEl.textContent = message;
+        statusMessageEl.className = `text-center font-medium p-2 rounded-md `;
+        if (type === 'success') {
+            statusMessageEl.classList.add('bg-success-50', 'text-success-600');
+        } else if (type === 'error') {
+            statusMessageEl.classList.add('bg-error-50', 'text-error-600');
+        } else { 
+            statusMessageEl.classList.add('bg-blue-50', 'text-blue-600'); 
+        }
+        statusMessageEl.classList.remove('hidden');
+
+        if (duration > 0) {
+            setTimeout(() => {
+                if (statusMessageEl) { // Check again in case it's removed
+                    statusMessageEl.classList.add('hidden');
+                    statusMessageEl.textContent = ''; 
+                }
+            }, duration);
+        }
+    }
+
+    function showLoader(show) {
+        if (!loaderEl || !analyzeButton) { console.error("loaderEl or analyzeButton not found."); return;}
+        loaderEl.classList.toggle('hidden', !show);
+        analyzeButton.disabled = show;
+        if(show && resultsAreaEl) {
+            resultsAreaEl.classList.add('hidden'); 
+        }
+    }
+
+    function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]); 
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    contractForm.addEventListener('submit', async (event) => {
+        event.preventDefault(); // VERY IMPORTANT: Must be the first line.
+        console.log('Form submission initiated. event.preventDefault() called.');
+
+        // Outer try-catch for the entire submit handler logic
+        try {
+            showLoader(true);
+            showStatus('Starting analysis...', 'info');
+
+            if (contractAnalyzer.apiKey === 'YOUR_API_KEY_HERE' || !contractAnalyzer.apiKey) {
+                showStatus('Error: Gemini API Key is not configured. The app owner needs to edit the HTML script and replace "YOUR_API_KEY_HERE" with an actual API key.', 'error');
+                // No duration, so message stays until next action or error
+                const warningBox = document.querySelector('.bg-yellow-50');
+                if (warningBox) warningBox.scrollIntoView({ behavior: 'smooth' });
+                // We call showLoader(false) in the finally block now
+                return; // Exit if API key is not set
+            }
+
+            const file = contractFileEl.files[0];
+            const clientInfo = {
+                clientNames: clientNamesEl.value.trim(),
+                agentName: agentNameEl.value.trim(),
+                propertyAddressOptional: propertyAddressOptionalEl.value.trim()
+            };
+
+            if (!file) {
+                showStatus('Error: Please upload a contract PDF.', 'error', 4000);
+                return; 
+            }
+            if (file.type !== "application/pdf") {
+                showStatus('Error: Invalid file type. Only PDF files are accepted.', 'error', 4000);
+                return; 
+            }
+            if (file.size > 10 * 1024 * 1024) { 
+                showStatus('Error: File is too large. Maximum size is 10MB.', 'error', 4000);
+                return; 
+            }
+
+            // Inner try-catch for the part that involves async operations and parsing
+            try {
+                showStatus('Processing PDF and preparing for AI analysis...', 'info');
+                const base64File = await fileToBase64(file); 
+
+                const prompt = `
+You are a highly specialized AI assistant for real estate professionals.
+Your task is to analyze the provided real estate contract PDF and extract specific information.
+Please output the information ONLY in a valid JSON format. Do not include any explanatory text before or after the JSON object.
+The JSON object should have the following structure:
+{
+  "propertyAddress": "string (full property address, if found, e.g., 123 Main St, Anytown, ST 12345)",
+  "summary": "string (a brief 2-3 sentence summary of the contract type and main parties, if discernible. E.g., 'This is a purchase agreement between John Doe (Buyer) and Jane Smith (Seller) for the residential property.')",
+  "keyDates": [
+    { "name": "Execution Date", "date": "YYYY-MM-DD" },
+    { "name": "Effective Date", "date": "YYYY-MM-DD" },
+    { "name": "Closing Date", "date": "YYYY-MM-DD" },
+    { "name": "Inspection Period End Date", "date": "YYYY-MM-DD" },
+    { "name": "Loan Contingency Deadline", "date": "YYYY-MM-DD" }
+    // Add any other significant dates you find, using a descriptive name and YYYY-MM-DD format.
+    // If a date is not found, you can omit the entry or set the date to null.
+    // If a date is written, for example, as "the first Monday of June 2024", calculate it to YYYY-MM-DD.
+    // If an exact day is not specified but a month and year are, use the first day of that month (e.g., "June 2024" becomes "2024-06-01").
+  ]
+}
+Extract dates as precisely as possible. Prioritize dates found within the main body or addendums of the contract.
+Ensure the output is a single, valid JSON object.
+`;
+
+                showStatus('Sending contract to AI for analysis... This may take a moment.', 'info');
+                const aiResponseText = await contractAnalyzer.callGeminiAPI(prompt, base64File);
+                
+                showStatus('AI analysis complete. Processing results...', 'info');
+                let contractData;
+                try {
+                    const cleanedJsonResponse = aiResponseText.replace(/^```json\s*|```$/g, '').trim();
+                    contractData = JSON.parse(cleanedJsonResponse);
+                } catch (parseError) {
+                    console.error("Failed to parse AI response as JSON:", aiResponseText, parseError);
+                    throw new Error(`AI response was not valid JSON. Consider refining the prompt or checking the AI model output. Raw response snippet: ${aiResponseText.substring(0,500)}...`);
+                }
+
+                if (!contractData || typeof contractData !== 'object') {
+                    throw new Error('Parsed AI response is not a valid object.');
+                }
+                contractData.keyDates = Array.isArray(contractData.keyDates) ? contractData.keyDates : [];
+
+                displayPropertyAddressEl.textContent = contractData.propertyAddress || clientInfo.propertyAddressOptional || 'Not specified in contract';
+                displayContractSummaryEl.textContent = contractData.summary || 'Not specified in contract';
+                
+                keyDatesTableBodyEl.innerHTML = ''; 
+                if (contractData.keyDates.length > 0) {
+                    contractData.keyDates.forEach(kd => {
+                        if(kd.name && kd.date) { 
+                            const row = keyDatesTableBodyEl.insertRow();
+                            const cellName = row.insertCell();
+                            const cellDate = row.insertCell();
+                            cellName.textContent = kd.name;
+                            try {
+                                 cellDate.textContent = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+                            } catch (e) {
+                                cellDate.textContent = kd.date; 
+                            }
+                        }
+                    });
+                } else {
+                    const row = keyDatesTableBodyEl.insertRow();
+                    const cell = row.insertCell();
+                    cell.colSpan = 2;
+                    cell.textContent = 'No key dates were extracted by the AI.';
+                    cell.classList.add('text-center', 'text-gray-500', 'py-4');
+                }
+
+                const emailContent = emailTemplates.generateClientEmail(contractData, clientInfo);
+                emailPreviewEl.value = emailContent;
+
+                const effectivePropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "The Property";
+                const allCalendarLinks = calendarUtils.generateAllCalendarLinks(contractData.keyDates, effectivePropertyAddress);
+                calendarLinksEl.innerHTML = ''; 
+                if (allCalendarLinks.length > 0) {
+                    allCalendarLinks.forEach(eventLinks => {
+                         if (eventLinks.error) {
+                             const errorEl = document.createElement('p');
+                             errorEl.className = 'text-sm text-error-500';
+                             errorEl.textContent = `Could not generate calendar links for "${eventLinks.eventName}": ${eventLinks.error}`;
+                             calendarLinksEl.appendChild(errorEl);
+                             return;
+                         }
+
+                        const eventContainer = document.createElement('div');
+                        eventContainer.className = 'mb-3 pb-3 border-b border-gray-200 last:border-b-0';
+                        
+                        const titleEl = document.createElement('p');
+                        titleEl.className = 'font-semibold text-gray-700';
+                        let formattedDate = eventLinks.date;
+                        try {
+                            const dateObj = new Date(eventLinks.date + 'T00:00:00Z');
+                            formattedDate = dateObj.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+                        } catch(e) { /* use original if formatting fails */ }
+
+                        titleEl.textContent = `${eventLinks.eventName} (${formattedDate})`;
+                        eventContainer.appendChild(titleEl);
+
+                        const linksWrapper = document.createElement('div');
+                        linksWrapper.className = 'flex flex-wrap gap-2 mt-1';
+                        
+                        const createLinkButton = (text, href, isDownload = false) => {
+                            const button = document.createElement('a');
+                            button.href = href;
+                            button.textContent = text;
+                            button.target = '_blank';
+                            button.rel = 'noopener noreferrer';
+                            button.className = 'button button-secondary text-xs py-1 px-2 leading-tight'; 
+                            if (isDownload && href !== '#') { 
+                                button.download = `${eventLinks.eventName.replace(/[\s:]+/g, '_')}_${eventLinks.date}.ics`;
+                            }
+                            return button;
+                        };
+
+                        linksWrapper.appendChild(createLinkButton('Google', eventLinks.links.google));
+                        linksWrapper.appendChild(createLinkButton('Outlook', eventLinks.links.outlook));
+                        linksWrapper.appendChild(createLinkButton('Apple (.ics)', eventLinks.links.apple, true)); 
+                        linksWrapper.appendChild(createLinkButton('Yahoo', eventLinks.links.yahoo));
+                        
+                        eventContainer.appendChild(linksWrapper);
+                        calendarLinksEl.appendChild(eventContainer);
+                    });
+                } else {
+                    calendarLinksEl.innerHTML = '<p class="text-gray-500">No calendar links generated (no key dates found or property address missing).</p>';
+                }
+
+                resultsAreaEl.classList.remove('hidden');
+                showStatus('Analysis successful! Results below.', 'success', 5000);
+
+            } catch (innerError) { // Catch errors from the main processing block (API call, parsing, etc.)
+                console.error('Error during contract analysis process:', innerError);
+                showStatus(`Processing Error: ${innerError.message}`, 'error'); 
+                if(resultsAreaEl) resultsAreaEl.classList.add('hidden');
+            }
+        } catch (outerError) { // Catch any unexpected errors from the setup part of the handler
+            console.error("Outer unhandled error in submit handler:", outerError);
+            showStatus(`Critical error during form submission: ${outerError.message}. Check console.`, 'error');
+        } finally {
+            showLoader(false); // This will always run, ensuring loader is hidden and button re-enabled
+            feather.replace(); 
+        }
+    });
+
+    copyEmailButton.addEventListener('click', () => {
+        if (!emailPreviewEl) return;
+        emailPreviewEl.select();
+        emailPreviewEl.setSelectionRange(0, 99999); 
+
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showStatus('Email content copied to clipboard!', 'success', 2000);
+            } else {
+                navigator.clipboard.writeText(emailPreviewEl.value).then(() => {
+                    showStatus('Email content copied to clipboard!', 'success', 2000);
+                }).catch(e => {
+                    showStatus('Failed to copy email. Please copy manually.', 'error', 3000);
+                    console.error('Copy failed:', e);
+                });
+            }
+        } catch (err) {
+             navigator.clipboard.writeText(emailPreviewEl.value).then(() => {
+                 showStatus('Email content copied to clipboard!', 'success', 2000);
+            }).catch(e => {
+                showStatus('Failed to copy email. Please copy manually.', 'error', 3000);
+                console.error('Copy failed:', e);
+            });
+        }
+    });
+
+    // Initial render of icons
+    try {
+        feather.replace();
+        console.log('Feather icons rendered.');
+    } catch(e) {
+        console.error("Feather icons replacement failed:", e);
+    }
+});
+</script>
+</body>
+</html>
+```
