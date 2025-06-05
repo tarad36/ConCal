@@ -640,21 +640,15 @@ async function callSecureGeminiViaMake(prompt, base64File) {
     contractForm.addEventListener('submit', async (event) => {
         event.preventDefault(); // VERY IMPORTANT: Must be the first line.
         console.log('Form submission initiated. event.preventDefault() called.');
+        console.log("Form was submitted. Starting contract analysis.");
+        console.log("Prompt sent to Make.com webhook. Awaiting response...");
 
         // Outer try-catch for the entire submit handler logic
         try {
             showLoader(true);
             showStatus('Starting analysis...', 'info');
 
-            if (contractAnalyzer.apiKey === 'YOUR_API_KEY_HERE' || !contractAnalyzer.apiKey) {
-                showStatus('Error: Gemini API Key is not configured. The app owner needs to edit the HTML script and replace "YOUR_API_KEY_HERE" with an actual API key.', 'error');
-                // No duration, so message stays until next action or error
-                const warningBox = document.querySelector('.bg-yellow-50');
-                if (warningBox) warningBox.scrollIntoView({ behavior: 'smooth' });
-                // We call showLoader(false) in the finally block now
-                return; // Exit if API key is not set
-            }
-
+            
             const file = contractFileEl.files[0];
             const clientInfo = {
                 clientNames: clientNamesEl.value.trim(),
