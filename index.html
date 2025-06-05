@@ -710,10 +710,15 @@ async function callSecureGeminiViaMake(prompt, base64File) {
 
     const data = await response.json();
     const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    // ✅ This line helps us debug Gemini's response:
+    console.log("AI raw response:", aiText);
+
     if (!aiText) throw new Error("AI response format invalid or missing.");
 
     return aiText;
 }
+
 
 
     contractForm.addEventListener('submit', async (event) => {
@@ -760,28 +765,26 @@ async function callSecureGeminiViaMake(prompt, base64File) {
                 const base64File = await fileToBase64(file); 
 
                 const prompt = `
+const prompt = `
 You are a highly specialized AI assistant for real estate professionals.
-Your task is to analyze the provided real estate contract PDF and extract specific information.
-Please output the information ONLY in a valid JSON format. Do not include any explanatory text before or after the JSON object.
-The JSON object should have the following structure:
+Analyze the uploaded real estate contract PDF and extract key data.
+
+Please return a response in **valid JSON**, exactly in this format:
+
 {
-  "propertyAddress": "string (full property address, if found, e.g., 123 Main St, Anytown, ST 12345)",
-  "summary": "string (a brief 2-3 sentence summary of the contract type and main parties, if discernible. E.g., 'This is a purchase agreement between John Doe (Buyer) and Jane Smith (Seller) for the residential property.')",
+  "propertyAddress": "123 Main St, Anytown, ST 12345",
+  "summary": "This is a purchase agreement between John Doe (Buyer) and Jane Smith (Seller)...",
   "keyDates": [
     { "name": "Execution Date", "date": "YYYY-MM-DD" },
-    { "name": "Effective Date", "date": "YYYY-MM-DD" },
-    { "name": "Closing Date", "date": "YYYY-MM-DD" },
-    { "name": "Inspection Period End Date", "date": "YYYY-MM-DD" },
-    { "name": "Loan Contingency Deadline", "date": "YYYY-MM-DD" }
-    // Add any other significant dates you find, using a descriptive name and YYYY-MM-DD format.
-    // If a date is not found, you can omit the entry or set the date to null.
-    // If a date is written, for example, as "the first Monday of June 2024", calculate it to YYYY-MM-DD.
-    // If an exact day is not specified but a month and year are, use the first day of that month (e.g., "June 2024" becomes "2024-06-01").
+    { "name": "Closing Date", "date": "YYYY-MM-DD" }
   ]
 }
-Extract dates as precisely as possible. Prioritize dates found within the main body or addendums of the contract.
-Ensure the output is a single, valid JSON object.
+
+- Do NOT include any commentary, markdown, or formatting.
+- If a value is not found, use an empty string or omit it.
+- Make sure your JSON is valid — no trailing commas or unescaped characters.
 `;
+;
 
                 showStatus('Sending contract to AI for analysis... This may take a moment.', 'info');
                 const aiResponseText = await callSecureGeminiViaMake(prompt, base64File);
