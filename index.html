@@ -765,7 +765,6 @@ async function callSecureGeminiViaMake(prompt, base64File) {
                 const base64File = await fileToBase64(file); 
 
                 const prompt = `
-const prompt = const prompt = `
 You are a highly specialized AI assistant for real estate professionals.
 Analyze the uploaded real estate contract PDF and extract key data.
 
@@ -780,8 +779,6 @@ Return only valid JSON like this:
 }
 Do NOT include commentary or formatting. Just return valid JSON. If data is missing, use an empty string.
 `;
-;
-;
 
                 showStatus('Sending contract to AI for analysis... This may take a moment.', 'info');
                 const aiResponseText = await callSecureGeminiViaMake(prompt, base64File);
@@ -941,6 +938,3 @@ Do NOT include commentary or formatting. Just return valid JSON. If data is miss
 </script>
 </body>
 </html>
-```
- 
- 
