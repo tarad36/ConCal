@@ -244,7 +244,7 @@
 
             <div class="card results-section" id="calendarSection">
                 <h3 class="flex items-center"><i data-feather="calendar" class="mr-2"></i>Calendar Event Links</h3>
-                <div id="calendarLinks" class="space-y-2">
+                <div id="calendarLinks" class="space-y-4">
                     </div>
             </div>
         </div>
@@ -256,11 +256,6 @@
 
 <script>
 // --- Class Definitions FIRST ---
-
-    }
-}
-
-// --- Simulating calendar-utils.js ---
 class CalendarUtils {
     constructor() {}
 
@@ -416,13 +411,11 @@ class CalendarUtils {
     }
 }
 
-// --- Simulating email-templates.js ---
 class EmailTemplates {
     constructor() {}
 
     getClientEmailTemplate() {
-        return `
-Subject: Congratulations on Going Under Contract for {propertyAddress}! 🎉
+        return `Subject: Congratulations on Going Under Contract for {propertyAddress}! 🎉
 
 Hi {clientNames},
 
@@ -453,8 +446,7 @@ Your Real Estate Partner
 
 ---
 Email generated on: {generatedDate}
-This is an automated message to help you stay informed. Always refer to your official contract documents for definitive terms and dates.
-`;
+This is an automated message to help you stay informed. Always refer to your official contract documents for definitive terms and dates.`;
     }
 
     formatClientNames(clientNamesStr) {
@@ -502,11 +494,16 @@ This is an automated message to help you stay informed. Always refer to your off
     }
 }
 
+
 // --- Main Application Logic (script.js) ---
-<script>
 document.addEventListener('DOMContentLoaded', () => {
   console.log("✅ DOM fully loaded. App is ready.");
 
+  // --- Instantiate Utility Classes ---
+  const emailTemplates = new EmailTemplates();
+  const calendarUtils = new CalendarUtils();
+
+  // --- Element Selectors ---
   const contractForm = document.getElementById('contractForm');
   const contractFileEl = document.getElementById('contractFile');
   const clientNamesEl = document.getElementById('clientNames');
@@ -523,6 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const copyEmailButton = document.getElementById('copyEmailButton');
   const calendarLinksEl = document.getElementById('calendarLinks');
 
+  // --- UI Functions ---
   function showStatus(message, type = 'info', duration = 0) {
     statusMessageEl.textContent = message;
     statusMessageEl.className = `text-center font-medium p-2 rounded-md`;
@@ -548,7 +546,8 @@ document.addEventListener('DOMContentLoaded', () => {
     analyzeButton.disabled = show;
     if (show) resultsAreaEl.classList.add('hidden');
   }
-
+  
+  // --- Core Logic ---
   function fileToBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -578,7 +577,36 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!aiText) throw new Error("AI response missing or malformed.");
     return aiText;
   }
+  
+  function populateCalendarLinks(allLinksData) {
+      calendarLinksEl.innerHTML = ''; // Clear previous links
+      if (!allLinksData || allLinksData.length === 0) {
+          calendarLinksEl.innerHTML = '<p class="text-gray-500">No calendar events to display.</p>';
+          return;
+      }
 
+      allLinksData.forEach(event => {
+          const formattedDate = new Date(event.date + 'T00:00:00Z').toLocaleDateString('en-US', {
+              year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+          });
+
+          const eventHTML = `
+              <div class="p-3 bg-gray-50 rounded-lg border">
+                  <p class="font-semibold text-gray-800">${event.eventName} - <span class="font-normal text-gray-600">${formattedDate}</span></p>
+                  <div class="flex items-center space-x-2 mt-2">
+                      <a href="${event.links.google}" target="_blank" class="text-sm bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Google</a>
+                      <a href="${event.links.outlook}" target="_blank" class="text-sm bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Outlook</a>
+                      <a href="${event.links.apple}" download="${event.eventName}.ics" class="text-sm bg-gray-800 text-white px-2 py-1 rounded hover:bg-black">Apple</a>
+                      <a href="${event.links.yahoo}" target="_blank" class="text-sm bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700">Yahoo</a>
+                  </div>
+                  ${event.error ? `<p class="text-red-500 text-xs mt-1">${event.error}</p>` : ''}
+              </div>
+          `;
+          calendarLinksEl.innerHTML += eventHTML;
+      });
+  }
+
+  // --- Event Listeners ---
   contractForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     console.log("📝 Form submitted");
@@ -596,6 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!file || file.type !== "application/pdf" || file.size > 10 * 1024 * 1024) {
         showStatus("Please upload a valid PDF file under 10MB.", "error", 4000);
+        showLoader(false);
         return;
       }
 
@@ -626,8 +655,11 @@ Do NOT include commentary or formatting. Just return valid JSON. If data is miss
       const cleanedJson = aiResponseText.replace(/^```json\s*|```$/g, '').trim();
       const contractData = JSON.parse(cleanedJson);
       const keyDates = Array.isArray(contractData.keyDates) ? contractData.keyDates : [];
+      const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || 'N/A';
 
-      displayPropertyAddressEl.textContent = contractData.propertyAddress || clientInfo.propertyAddressOptional || 'N/A';
+
+      // --- Populate UI with Extracted Data ---
+      displayPropertyAddressEl.textContent = finalPropertyAddress;
       displayContractSummaryEl.textContent = contractData.summary || 'No summary provided';
 
       keyDatesTableBodyEl.innerHTML = '';
@@ -652,13 +684,20 @@ Do NOT include commentary or formatting. Just return valid JSON. If data is miss
         cell.textContent = 'No key dates returned.';
       }
 
-      emailPreviewEl.value = `Client Email Template would go here (you can reinsert your email generation code if needed).`;
+      // --- Generate and Populate Email ---
+      emailPreviewEl.value = emailTemplates.generateClientEmail(contractData, clientInfo);
+
+      // --- Generate and Populate Calendar Links ---
+      const allCalendarLinks = calendarUtils.generateAllCalendarLinks(keyDates, finalPropertyAddress);
+      populateCalendarLinks(allCalendarLinks);
+
+      // --- Finalize UI ---
       resultsAreaEl.classList.remove('hidden');
       showStatus("✅ Done!", "success", 4000);
 
     } catch (error) {
       console.error("❌ Error:", error);
-      showStatus("Something went wrong: " + error.message, "error");
+      showStatus("Something went wrong: " + error.message, "error", 8000);
     } finally {
       showLoader(false);
     }
@@ -669,7 +708,7 @@ Do NOT include commentary or formatting. Just return valid JSON. If data is miss
     emailPreviewEl.select();
     emailPreviewEl.setSelectionRange(0, 99999);
     navigator.clipboard.writeText(emailPreviewEl.value).then(() => {
-      showStatus("Copied!", "success", 2000);
+      showStatus("Copied to clipboard!", "success", 2000);
     }).catch(e => {
       showStatus("Failed to copy.", "error", 3000);
     });
@@ -681,6 +720,4 @@ Do NOT include commentary or formatting. Just return valid JSON. If data is miss
 
 </body>
 </html>
-```
- 
  
