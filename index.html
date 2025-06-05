@@ -633,10 +633,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize Classes
     let contractAnalyzer, calendarUtils, emailTemplates;
     try {
-        contractAnalyzer = new ContractAnalyzer(); 
+        contractAnalyzer = new ContractAnalyzer();
         calendarUtils = new CalendarUtils();
         emailTemplates = new EmailTemplates();
         console.log('Utility classes initialized.');
+        // Hide the API key warning box if an actual key is configured
+        const apiKeyWarningBox = document.querySelector('.bg-yellow-50');
+        if (apiKeyWarningBox && contractAnalyzer.apiKey !== 'YOUR_API_KEY_HERE') {
+            apiKeyWarningBox.classList.add('hidden');
+        }
     } catch (e) {
         console.error("Error initializing utility classes:", e);
         alert("A critical error occurred initializing application components. Check the console.");
