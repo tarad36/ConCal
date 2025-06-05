@@ -146,16 +146,8 @@
 
     <div class="container mx-auto p-4 md:p-8">
         <div class="card bg-yellow-50 border border-yellow-300 mb-6">
-            <h2 class="text-lg font-semibold text-yellow-700 flex items-center">
-                <i data-feather="alert-triangle" class="mr-2"></i>Important Note for App Owner
-            </h2>
-            <p class="text-yellow-700 mt-2">
-                To use this application, you must insert your Google Gemini API Key directly into the JavaScript code.
-                Search for `<strong>YOUR_API_KEY_HERE</strong>` in the script section of this HTML file and replace it with your valid API key.
-            </p>
-            <p class="text-sm text-yellow-600 mt-2">
-                <strong>Security Warning:</strong> Embedding API keys in client-side code is not secure for public applications.
-                This key will be visible to anyone inspecting the page source. Use this method only for personal or trusted internal use.
+                       <p class="text-sm text-yellow-600 mt-2">
+                <strong>This app uses a secure server to process your contract with AI. No information is stored.</strong> 
             </p>
         </div>
 
@@ -265,82 +257,6 @@
 <script>
 // --- Class Definitions FIRST ---
 
-// --- Simulating contract-analyzer.js ---
-class ContractAnalyzer {
-    constructor() {
-        this.apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
-        // IMPORTANT: Replace 'YOUR_API_KEY_HERE' with your actual Gemini API Key.
-        this.apiKey = 'AIzaSyAfQduHzN5wVGfg36zPDLSCBmmoPc9E-AQ'; // Generic placeholder
-    }
-
-    async callGeminiAPI(prompt, base64File) {
-        if (this.apiKey === 'YOUR_API_KEY_HERE' || !this.apiKey) {
-            throw new Error('Gemini API key is not configured. Please edit the script and replace "YOUR_API_KEY_HERE" with your actual key.');
-        }
-        // ... rest of the function ...
-        const requestBody = {
-            contents: [{
-                parts: [
-                    { text: prompt },
-                    {
-                        inline_data: {
-                            mime_type: "application/pdf",
-                            data: base64File
-                        }
-                    }
-                ]
-            }],
-            generationConfig: {
-                temperature: 0.1,
-                topK: 32,
-                topP: 1,
-                maxOutputTokens: 4096,
-            }
-        };
-
-        try {
-            const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: { message: 'Unknown API error structure' } }));
-                console.error('API Error Data:', errorData);
-                let errorMessage = `API request failed: ${response.status} ${response.statusText}.`;
-                if (errorData.error && errorData.error.message) {
-                    errorMessage += ` ${errorData.error.message}`;
-                }
-                if (errorMessage.toLowerCase().includes('api key not valid') || response.status === 400 && errorMessage.toLowerCase().includes('api key not valid')) {
-                     throw new Error('Invalid API key. Please check your Gemini API key in the script. Ensure it is enabled for the Gemini API.');
-                } else if (errorMessage.includes('QUOTA_EXCEEDED') || response.status === 429) {
-                    throw new Error('API quota exceeded. Please check your Gemini API usage limits.');
-                }
-                throw new Error(errorMessage);
-            }
-
-            const data = await response.json();
-            
-            if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0].text) {
-                console.error('Invalid response structure:', data);
-                throw new Error('Invalid response format from AI service. Expected text part missing.');
-            }
-            return data.candidates[0].content.parts[0].text;
-            
-        } catch (error) {
-            console.error('Gemini API Error:', error);
-            if (error.message.toLowerCase().includes('api key not valid')) {
-                 throw new Error('Invalid API key. Please check your Gemini API key in the script. Ensure it is enabled for the Gemini API.');
-            } else if (error.message.includes('QUOTA_EXCEEDED')) {
-                throw new Error('API quota exceeded. Please check your Gemini API usage limits.');
-            } else if (error.name === 'TypeError' && error.message.toLowerCase().includes('failed to fetch')) {
-                throw new Error('Network error. Please check your internet connection and ensure the API endpoint is correct and reachable.');
-            }
-            throw error; 
-        }
     }
 }
 
@@ -765,7 +681,7 @@ async function callSecureGeminiViaMake(prompt, base64File) {
                 const base64File = await fileToBase64(file); 
 
                 const prompt = `
-const prompt = const prompt = `
+const prompt = `
 You are a highly specialized AI assistant for real estate professionals.
 Analyze the uploaded real estate contract PDF and extract key data.
 
@@ -780,6 +696,7 @@ Return only valid JSON like this:
 }
 Do NOT include commentary or formatting. Just return valid JSON. If data is missing, use an empty string.
 `;
+
 ;
 ;
 
