@@ -689,6 +689,32 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onerror = error => reject(error);
         });
     }
+async function callSecureGeminiViaMake(prompt, base64File) {
+    const webhookUrl = "https://hook.us2.make.com/fbpv4vhqqtyc5ixjl8d2c6cmhio3jiun";
+
+    const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            prompt: prompt,
+            base64pdf: base64File
+        })
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Make webhook call failed: ${response.statusText} — ${errorText}`);
+    }
+
+    const data = await response.json();
+    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!aiText) throw new Error("AI response format invalid or missing.");
+
+    return aiText;
+}
+
 
     contractForm.addEventListener('submit', async (event) => {
         event.preventDefault(); // VERY IMPORTANT: Must be the first line.
@@ -758,7 +784,8 @@ Ensure the output is a single, valid JSON object.
 `;
 
                 showStatus('Sending contract to AI for analysis... This may take a moment.', 'info');
-                const aiResponseText = await contractAnalyzer.callGeminiAPI(prompt, base64File);
+                const aiResponseText = await callSecureGeminiViaMake(prompt, base64File);
+
                 
                 showStatus('AI analysis complete. Processing results...', 'info');
                 let contractData;
