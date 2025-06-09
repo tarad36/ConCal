@@ -512,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- API Call ---
     async function callSecureGeminiViaMake(prompt, base64File) {
-        const webhookUrl = "https://hook.us2.make.com/foigvu1wjscouxbrcr9t6rfllohge9cc";
+        const webhookUrl = "/api/gemini";
         const response = await fetch(webhookUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
