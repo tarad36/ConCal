@@ -191,7 +191,7 @@
                 <h3 class="flex items-center"><i data-feather="list" class="mr-2"></i>Extracted Information</h3>
                 <div id="extractedContractData" class="prose max-w-none">
                     <p><strong>Property Address:</strong> <span id="displayPropertyAddress"></span></p>
-                    <p><strong>Summary:</strong> <span id="displayContractSummary"></span></p>
+                    <p><strong>Special Terms:</strong> <span id="displaySpecialTerms"></span></p>
                     <h4 class="font-semibold mt-3 mb-2">Key Dates:</h4>
                     <table id="extractedDataTable" class="w-full text-sm">
                         <thead>
@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusMessageEl = document.getElementById('statusMessage');
     const resultsAreaEl = document.getElementById('resultsArea');
     const displayPropertyAddressEl = document.getElementById('displayPropertyAddress');
-    const displayContractSummaryEl = document.getElementById('displayContractSummary');
+    const displaySpecialTermsEl = document.getElementById('displaySpecialTerms');
     const keyDatesTableBodyEl = document.getElementById('keyDatesTableBody');
     const emailPreviewEl = document.getElementById('emailPreview');
     const copyEmailButton = document.getElementById('copyEmailButton');
@@ -645,7 +645,10 @@ Generate the email using the provided contract details and timeline, maintaining
             const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || 'N/A';
 
             displayPropertyAddressEl.textContent = finalPropertyAddress;
-            displayContractSummaryEl.textContent = contractData.summary || 'No summary provided';
+            const specialTermsText = contractData.specialTerms || '';
+            displayContractSummaryEl.textContent = specialTermsText ? 
+            `Special terms: ${specialTermsText}` : 
+            'Standard contract terms apply';
 
             keyDatesTableBodyEl.innerHTML = '';
             if (keyDates.length) {
