@@ -535,11 +535,10 @@ async function callGeminiAPI(prompt, base64File) {
     }
     console.log("✅ AI response text received:", aiText);
     return aiText;
-}
     }
 
     // --- DOM Population Functions ---
-    (function populateCalendarLinks(allLinksData) {
+    function populateCalendarLinks(allLinksData) {
         calendarLinksEl.innerHTML = '';
         if (!allLinksData || allLinksData.length === 0) {
             calendarLinksEl.innerHTML = '<p class="text-gray-500">No calendar events to display.</p>';
