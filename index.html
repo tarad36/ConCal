@@ -564,7 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const data = await response.json();
-        const aiText = data.candidates ? [0] ? .content ? .parts ? .[0] ? .text;
+       const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
         console.log("✅ AI response:", aiText);
 
         if (!aiText) throw new Error("AI response missing or malformed.");
