@@ -6,24 +6,32 @@ export default async function handler(req, res) {
   const { prompt, base64pdf } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
 
-  const response = await fetch(
-    https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro-latest:generateContent?key=AIzaSyBxwhdGc7BXPC6pbL8cPSOAbFoDW14LUtg,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt },
-              { inlineData: { mimeType: 'application/pdf', data: base64pdf } }
-            ]
-          }
-        ]
-      })
-    }
-  );
+  if (!apiKey) {
+    return res.status(500).json({ error: 'Gemini API key is not set on the server.' });
+  }
 
-  const data = await response.json();
-  res.status(200).json(data);
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro-latest:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: prompt },
+                { inlineData: { mimeType: 'application/pdf', data: base64pdf } }
+              ]
+            }
+          ]
+        })
+      }
+    );
+
+    const data = await response.json();
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Something went wrong' });
+  }
 }
