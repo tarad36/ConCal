@@ -595,9 +595,46 @@ async function callGeminiAPI(prompt, base64File) {
             showStatus("Converting file for analysis...", "info");
             const base64File = await fileToBase64(file);
 
-            const prompt = `You are a highly specialized AI assistant for real estate professionals. Analyze the uploaded real estate contract PDF and extract key data. Return ONLY a single, valid JSON object with no other text, comments, or markdown. The JSON object should follow this exact structure: { "propertyAddress": "123 Main St, Anytown, ST 12345", "summary": "A brief, one-paragraph summary of the contract.", "keyDates": [ { "name": "Event Name", "date": "YYYY-MM-DD" }, { "name": "Closing Date", "date": "YYYY-MM-DD" } ] }. If any data is missing from the contract, use an empty string "" for addresses/summaries or an empty array [] for keyDates.`;
+            const prompt = `Data Input Format: This prompt expects to receive contract data in the following JSON format:
+{
+  "propertyAddress": "123 Main St, Anytown, ST 12345",
+  "specialTerms": "Brief note about any non-standard contract terms, contingencies, or special conditions that differ from a typical purchase agreement. Leave empty if standard contract.",
+  "keyDates": [
+    {
+      "name": "Event Name", 
+      "date": "YYYY-MM-DD"
+    }
+  ]
+}
+Tone & Style Instructions: Write an enthusiastic, warm, and personal email celebrating that the client's property is now under contract. The tone should feel like a friend sharing exciting news - genuine excitement without being overly formal or robotic. Use conversational language that builds confidence and trust.
+Output Requirements: Generate a complete email in HTML. Do not return JSON - return the actual email content ready to send.
+Email Structure:
+Subject Line: "🎉 WE DID IT! [Property Address] is Under Contract!"
+Opening: Start with genuine excitement and a personal touch. Acknowledge this milestone moment and make them feel like they've achieved something significant together as a team.
+Body Content:
+Express authentic enthusiasm about getting the deal done
+Use "we" language to emphasize partnership
+Present contract details in a clean, scannable format without excessive legal jargon
+Focus on the key dates they need to know, positioned as "here's what happens next"
+Include a reassuring statement about being there to guide them through each step
+Key Information to Include:
+Use propertyAddress from the JSON data
+If specialTerms contains information, include a brief mention of any non-standard contract elements (e.g., "Note: This contract includes a rent-back provision" or "FYI: We negotiated an extended inspection period")
+Format keyDates as a clean timeline, converting dates to readable format (e.g., "December 4, 2025")
+Identify and highlight the most critical upcoming deadlines
+Closing: End with warmth, accessibility, and forward momentum. Remind them you're their advocate and partner in this process.
+Signature: Include a note that "This was prepared with the help of my trusty AI assistant.  Make sure you refer to the original document for detailed information.”
+Style Notes:
+Use em dashes instead of colons for a more conversational feel
+Include appropriate emojis sparingly (celebration, home, calendar)
+Keep paragraphs short and readable
+Avoid overly formal real estate speak
+Make it feel like it was written BY a person, not by a system
+Sample Opening Lines to Emulate: "I'm so excited we got this locked in for you..." "What a fantastic milestone we've reached together..." "I couldn't be happier about how this came together..." "This is exactly what we were working toward – and we did it!"
+Generate the email using the provided contract details and timeline, maintaining this warm, professional, and celebratory tone throughout.
 
-            showStatus("Sending to AI via Make.com... (This may take a moment)", "info");
+
+            showStatus("Sending to AI Nathalie... (This may take a moment)", "info");
             const aiResponseText = await callGeminiAPI(prompt, base64File);
 
             showStatus("AI response received. Parsing and displaying results...", "info");
