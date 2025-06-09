@@ -54,9 +54,14 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem; /* Tailwind space-x-2 */
+            cursor: pointer;
         }
         .button:hover {
             background-color: #2563eb; /* Tailwind hover:bg-brand-600 */
+        }
+        .button:disabled {
+            background-color: #9ca3af; /* Tailwind bg-gray-400 */
+            cursor: not-allowed;
         }
         .button-secondary {
             background-color: #6b7280; /* Tailwind bg-gray-500 */
@@ -100,35 +105,16 @@
     </style>
     
     <script>
+        // Tailwind CSS configuration
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        'inter': ['Inter', 'sans-serif'],
-                    },
+                    fontFamily: { 'inter': ['Inter', 'sans-serif'] },
                     colors: {
-                        'brand': {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                        },
-                        'success': {
-                            50: '#f0fdf4',
-                            500: '#22c55e',
-                            600: '#16a34a',
-                        },
-                        'warning': {
-                            50: '#fffbeb',
-                            500: '#f59e0b',
-                            600: '#d97706',
-                        },
-                        'error': {
-                            50: '#fef2f2',
-                            500: '#ef4444',
-                            600: '#dc2626',
-                        }
+                        'brand': { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+                        'success': { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a' },
+                        'warning': { 50: '#fffbeb', 500: '#f59e0b', 600: '#d97706' },
+                        'error': { 50: '#fef2f2', 500: '#ef4444', 600: '#dc2626' }
                     }
                 }
             }
@@ -143,7 +129,10 @@
         </div>
     </nav>
 
-           <form id="contractForm" class="grid md:grid-cols-2 gap-6">
+    <!-- Main Content Container -->
+    <div class="container mx-auto p-4">
+        <form id="contractForm" class="grid md:grid-cols-2 gap-6">
+            <!-- Card 1: Contract Details -->
             <div class="card">
                 <h2 class="text-xl font-semibold mb-4 text-brand-700 flex items-center">
                     <i data-feather="file-text" class="mr-2"></i>Contract Details
@@ -177,34 +166,26 @@
                 </div>
             </div>
 
+            <!-- Card 2: How it Works -->
             <div class="card bg-brand-50">
                  <h2 class="text-xl font-semibold mb-4 text-brand-700 flex items-center">
                     <i data-feather="info" class="mr-2"></i>How it Works
                 </h2>
-                <p class="text-gray-700 mb-2">
-                    1.  <strong class="text-brand-600">Upload PDF:</strong> Select the real estate contract (PDF format).
-                </p>
-                <p class="text-gray-700 mb-2">
-                    2.  <strong class="text-brand-600">Enter Info:</strong> Provide client and your names.
-                </p>
-                <p class="text-gray-700 mb-2">
-                    3.  <strong class="text-brand-600">Analyze:</strong> Click "Analyze Contract". The AI will extract key dates and information.
-                </p>
-                <p class="text-gray-700">
-                    4.  <strong class="text-brand-600">Get Results:</strong> Review the generated client email and calendar event links.
-                </p>
-                <p class="text-sm text-gray-500 mt-4">
-                    This tool uses AI to process your contract. Ensure your PDF is clear and legible for best results.
-                    No contract content is stored by this application after processing.
-                </p>
+                <p class="text-gray-700 mb-2">1.  <strong class="text-brand-600">Upload PDF:</strong> Select the real estate contract (PDF format).</p>
+                <p class="text-gray-700 mb-2">2.  <strong class="text-brand-600">Enter Info:</strong> Provide client and your names.</p>
+                <p class="text-gray-700 mb-2">3.  <strong class="text-brand-600">Analyze:</strong> Click "Analyze Contract". The AI will extract key dates and information.</p>
+                <p class="text-gray-700">4.  <strong class="text-brand-600">Get Results:</strong> Review the generated client email and calendar event links.</p>
+                <p class="text-sm text-gray-500 mt-4">This tool uses AI to process your contract. Ensure your PDF is clear and legible for best results. No contract content is stored by this application after processing.</p>
             </div>
         </form>
 
+        <!-- Status Section -->
         <div id="statusSection" class="my-4 text-center">
             <div id="loader" class="loader hidden"></div>
             <p id="statusMessage" class="text-gray-700 font-medium"></p>
         </div>
 
+        <!-- Results Area -->
         <div id="resultsArea" class="hidden">
             <div class="card results-section" id="extractedInfoSection">
                 <h3 class="flex items-center"><i data-feather="list" class="mr-2"></i>Extracted Information</h3>
@@ -219,8 +200,7 @@
                                 <th>Date</th>
                             </tr>
                         </thead>
-                        <tbody id="keyDatesTableBody">
-                        </tbody>
+                        <tbody id="keyDatesTableBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -235,8 +215,7 @@
 
             <div class="card results-section" id="calendarSection">
                 <h3 class="flex items-center"><i data-feather="calendar" class="mr-2"></i>Calendar Event Links</h3>
-                <div id="calendarLinks" class="space-y-4">
-                </div>
+                <div id="calendarLinks" class="space-y-4"></div>
             </div>
         </div>
     </div>
@@ -245,6 +224,12 @@
         Contract Timeline App - For Real Estate Professionals
     </footer>
 
+<!--
+    ===================================================================
+    APPLICATION JAVASCRIPT
+    All the logic for the app is contained within this single script tag.
+    ===================================================================
+-->
 <script>
 // --- Class: CalendarUtils ---
 class CalendarUtils {
@@ -335,19 +320,12 @@ class CalendarUtils {
         }
 
         const icalContent = [
-            'BEGIN:VCALENDAR',
-            'VERSION:2.0',
-            'PRODID:-//ContractTimelineApp//EN',
-            'BEGIN:VEVENT',
+            'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ContractTimelineApp//EN', 'BEGIN:VEVENT',
             `UID:${new Date().getTime()}@contracttimeline.app`,
             `DTSTAMP:${new Date().toISOString().replace(/[-:.]/g, '').substring(0,15)}Z`,
-            `DTSTART;VALUE=DATE:${startDate}`,
-            `DTEND;VALUE=DATE:${iCalEndDate}`,
-            `SUMMARY:${details.title}`,
-            `DESCRIPTION:${details.description.replace(/\n/g, '\\n')}`,
-            `LOCATION:${details.location}`,
-            'END:VEVENT',
-            'END:VCALENDAR'
+            `DTSTART;VALUE=DATE:${startDate}`, `DTEND;VALUE=DATE:${iCalEndDate}`,
+            `SUMMARY:${details.title}`, `DESCRIPTION:${details.description.replace(/\n/g, '\\n')}`,
+            `LOCATION:${details.location}`, 'END:VEVENT', 'END:VCALENDAR'
         ].join('\r\n');
         return `data:text/calendar;charset=utf8,${encodeURIComponent(icalContent)}`;
     }
@@ -357,12 +335,8 @@ class CalendarUtils {
         const st = `${details.startDate}T000000`;
 
         const params = new URLSearchParams({
-            v: 60,
-            title: details.title,
-            st: st,
-            dur: 'allday',
-            desc: details.description,
-            in_loc: details.location
+            v: 60, title: details.title, st: st, dur: 'allday',
+            desc: details.description, in_loc: details.location
         });
         return `https://calendar.yahoo.com/?${params.toString()}`;
     }
@@ -388,8 +362,7 @@ class CalendarUtils {
             } catch (error) {
                 console.error(`Error generating calendar links for ${eventData.name}:`, error);
                 allLinks.push({
-                    eventName: eventData.name,
-                    date: eventData.date,
+                    eventName: eventData.name, date: eventData.date,
                     links: { google: '#', outlook: '#', apple: '#', yahoo: '#' },
                     error: 'Could not generate links for this event.'
                 });
@@ -459,7 +432,6 @@ This is an automated message to help you stay informed. Always refer to your off
 
     generateClientEmail(contractData, clientInfo) {
         const template = this.getClientEmailTemplate();
-
         const formattedKeyDates = (contractData.keyDates || []).map(kd => ({
             name: kd.name || "Unknown Event",
             date: kd.date ? new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }) : 'To Be Determined'
@@ -472,12 +444,7 @@ This is an automated message to help you stay informed. Always refer to your off
             keyDatesList: formattedKeyDates.length > 0 ? formattedKeyDates.map(kd => `- ${kd.name}: ${kd.date}`).join('\n') : "Key dates will be confirmed shortly.",
             keyDates: formattedKeyDates,
             contractSummary: contractData.summary || 'Details are being compiled.',
-            generatedDate: new Date().toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            })
+            generatedDate: new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
         };
 
         return this.populateTemplate(template, emailData);
@@ -488,9 +455,11 @@ This is an automated message to help you stay informed. Always refer to your off
 document.addEventListener('DOMContentLoaded', () => {
     console.log("✅ DOM fully loaded. App is ready.");
 
+    // Instantiate utility classes
     const emailTemplates = new EmailTemplates();
     const calendarUtils = new CalendarUtils();
 
+    // Get all necessary DOM elements
     const contractForm = document.getElementById('contractForm');
     const contractFileEl = document.getElementById('contractFile');
     const clientNamesEl = document.getElementById('clientNames');
@@ -507,16 +476,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyEmailButton = document.getElementById('copyEmailButton');
     const calendarLinksEl = document.getElementById('calendarLinks');
 
+    // --- UI Helper Functions ---
     function showStatus(message, type = 'info', duration = 0) {
         statusMessageEl.textContent = message;
         statusMessageEl.className = `text-center font-medium p-2 rounded-md`;
-        if (type === 'success') {
-            statusMessageEl.classList.add('bg-green-100', 'text-green-700');
-        } else if (type === 'error') {
-            statusMessageEl.classList.add('bg-red-100', 'text-red-700');
-        } else {
-            statusMessageEl.classList.add('bg-blue-100', 'text-blue-700');
-        }
+        if (type === 'success') statusMessageEl.classList.add('bg-green-100', 'text-green-700');
+        else if (type === 'error') statusMessageEl.classList.add('bg-red-100', 'text-red-700');
+        else statusMessageEl.classList.add('bg-blue-100', 'text-blue-700');
         statusMessageEl.classList.remove('hidden');
 
         if (duration > 0) {
@@ -530,7 +496,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function showLoader(show) {
         loaderEl.classList.toggle('hidden', !show);
         analyzeButton.disabled = show;
-        if (show) resultsAreaEl.classList.add('hidden');
+        if (show) {
+            resultsAreaEl.classList.add('hidden');
+        }
     }
 
     function fileToBase64(file) {
@@ -541,7 +509,8 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onerror = error => reject(error);
         });
     }
-
+    
+    // --- API Call ---
     async function callSecureGeminiViaMake(prompt, base64File) {
         const webhookUrl = "https://hook.us2.make.com/fbpv4vhqqtyc5ixjl8d2c6cmhio3jiun";
         const response = await fetch(webhookUrl, {
@@ -552,17 +521,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`Make webhook failed: ${response.statusText} — ${errorText}`);
+            throw new Error(`Make.com webhook failed: ${response.statusText} — ${errorText}`);
         }
-
-        const data = await response.json();
-       const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        console.log("✅ AI response:", aiText);
-
-        if (!aiText) throw new Error("AI response missing or malformed.");
+        
+        // Make.com can sometimes return a stringified JSON. We parse it to get the object.
+        const responseBody = await response.json(); 
+        
+        // The actual Gemini response is often nested inside the Make.com response body.
+        // We look for the expected structure from the Gemini API.
+        const aiText = responseBody.candidates?.[0]?.content?.parts?.[0]?.text;
+        
+        if (!aiText) {
+            console.error("Full Make.com response:", responseBody);
+            throw new Error("AI response was not found in the expected format from Make.com.");
+        }
+        console.log("✅ AI response text received:", aiText);
         return aiText;
     }
 
+    // --- DOM Population Functions ---
     function populateCalendarLinks(allLinksData) {
         calendarLinksEl.innerHTML = '';
         if (!allLinksData || allLinksData.length === 0) {
@@ -572,10 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         allLinksData.forEach(event => {
             const formattedDate = new Date(event.date + 'T00:00:00Z').toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                timeZone: 'UTC'
+                year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
             });
 
             const eventHTML = `
@@ -594,9 +568,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Main Form Submit Handler ---
     contractForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        console.log("📝 Form submitted");
+        event.preventDefault(); // This is CRITICAL. It stops the page from reloading.
+        console.log("📝 Form submission intercepted. Starting analysis process.");
 
         try {
             showLoader(true);
@@ -610,36 +585,21 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             if (!file || file.type !== "application/pdf" || file.size > 10 * 1024 * 1024) {
-                showStatus("Please upload a valid PDF file under 10MB.", "error", 4000);
-                showLoader(false);
-                return;
+                throw new Error("Please upload a valid PDF file under 10MB.");
             }
 
-            showStatus("Converting file...", "info");
+            showStatus("Converting file for analysis...", "info");
             const base64File = await fileToBase64(file);
 
-            const prompt = `
-You are a highly specialized AI assistant for real estate professionals.
-Analyze the uploaded real estate contract PDF and extract key data.
-Return only valid JSON like this:
-{
-  "propertyAddress": "123 Main St, Anytown, ST 12345",
-  "summary": "This is a purchase agreement between John Doe (Buyer) and Jane Smith (Seller)...",
-  "keyDates": [
-    { "name": "Execution Date", "date": "YYYY-MM-DD" },
-    { "name": "Closing Date", "date": "YYYY-MM-DD" }
-  ]
-}
-Do NOT include commentary or formatting. Just return valid JSON. If data is missing, use an empty string or null.
-`;
+            const prompt = `You are a highly specialized AI assistant for real estate professionals. Analyze the uploaded real estate contract PDF and extract key data. Return ONLY a single, valid JSON object with no other text, comments, or markdown. The JSON object should follow this exact structure: { "propertyAddress": "123 Main St, Anytown, ST 12345", "summary": "A brief, one-paragraph summary of the contract.", "keyDates": [ { "name": "Event Name", "date": "YYYY-MM-DD" }, { "name": "Closing Date", "date": "YYYY-MM-DD" } ] }. If any data is missing from the contract, use an empty string "" for addresses/summaries or an empty array [] for keyDates.`;
 
-            showStatus("Sending to AI via Make.com...", "info");
+            showStatus("Sending to AI via Make.com... (This may take a moment)", "info");
             const aiResponseText = await callSecureGeminiViaMake(prompt, base64File);
 
-            showStatus("AI response received. Parsing...", "info");
+            showStatus("AI response received. Parsing and displaying results...", "info");
 
-            const cleanedJson = aiResponseText.replace(/^```json\s*|```$/g, '').trim();
-            const contractData = JSON.parse(cleanedJson);
+            const cleanedJsonText = aiResponseText.replace(/^```json\s*|```$/g, '').trim();
+            const contractData = JSON.parse(cleanedJsonText);
             const keyDates = Array.isArray(contractData.keyDates) ? contractData.keyDates : [];
             const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || 'N/A';
 
@@ -650,56 +610,59 @@ Do NOT include commentary or formatting. Just return valid JSON. If data is miss
             if (keyDates.length) {
                 keyDates.forEach(kd => {
                     const row = keyDatesTableBodyEl.insertRow();
-                    const cell1 = row.insertCell();
-                    const cell2 = row.insertCell();
-                    cell1.textContent = kd.name;
+                    row.insertCell().textContent = kd.name;
                     try {
-                        cell2.textContent = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                            timeZone: 'UTC'
+                        const dateCell = row.insertCell();
+                        dateCell.textContent = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
+                            year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
                         });
                     } catch {
-                        cell2.textContent = kd.date;
+                        row.insertCell().textContent = kd.date; // Fallback if date is invalid
                     }
                 });
             } else {
                 const row = keyDatesTableBodyEl.insertRow();
                 const cell = row.insertCell();
                 cell.colSpan = 2;
-                cell.textContent = 'No key dates returned.';
+                cell.textContent = 'No key dates were extracted from the contract.';
             }
 
             emailPreviewEl.value = emailTemplates.generateClientEmail(contractData, clientInfo);
-
             const allCalendarLinks = calendarUtils.generateAllCalendarLinks(keyDates, finalPropertyAddress);
             populateCalendarLinks(allCalendarLinks);
 
             resultsAreaEl.classList.remove('hidden');
-            showStatus("✅ Done!", "success", 4000);
+            showStatus("✅ Analysis complete!", "success", 4000);
 
         } catch (error) {
-            console.error("❌ Error:", error);
-            showStatus("Something went wrong: " + error.message, "error", 8000);
+            console.error("❌ A critical error occurred:", error);
+            showStatus(`Error: ${error.message}`, "error", 8000);
         } finally {
             showLoader(false);
         }
     });
 
+    // --- Other Event Listeners ---
     copyEmailButton.addEventListener('click', () => {
-        if (!emailPreviewEl) return;
         emailPreviewEl.select();
         emailPreviewEl.setSelectionRange(0, 99999);
+        // Use the clipboard API for modern browsers
         navigator.clipboard.writeText(emailPreviewEl.value).then(() => {
             showStatus("Copied to clipboard!", "success", 2000);
-        }).catch(e => {
-            showStatus("Failed to copy.", "error", 3000);
+        }).catch(err => {
+            console.error('Failed to copy text: ', err);
+            showStatus("Could not copy text.", "error", 3000);
         });
     });
 
+    // Initialize Feather Icons
     feather.replace();
 });
+</script>
+
+</body>
+</html>
+
 
 <script src="script.js"></script></body>
 </html>
