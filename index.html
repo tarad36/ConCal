@@ -207,10 +207,10 @@
 
             <div class="card results-section" id="emailSection">
                 <h3 class="flex items-center"><i data-feather="mail" class="mr-2"></i>Generated Client Email</h3>
-                <textarea id="emailPreview" class="textarea" rows="15"></textarea>
-                <button id="copyEmailButton" class="button mt-2">
-                    <i data-feather="copy" class="feather"></i> Copy Email
-                </button>
+                <div id="emailPreview" class="prose prose-sm max-w-none bg-white p-4 rounded border border-gray-200 mb-2" style="min-height: 200px;"></div>
+<button id="copyEmailButton" class="button mt-2">
+    <i data-feather="copy" class="feather"></i> Copy Email HTML
+</button>
             </div>
 
             <div class="card results-section" id="calendarSection">
@@ -668,7 +668,7 @@ Generate the email using the provided contract details and timeline, maintaining
                 cell.textContent = 'No key dates were extracted from the contract.';
             }
 
-            emailPreviewEl.value = emailTemplates.generateClientEmail(contractData, clientInfo);
+            emailPreviewEl.innerHTML = aiResponseText; //
             const allCalendarLinks = calendarUtils.generateAllCalendarLinks(keyDates, finalPropertyAddress);
             populateCalendarLinks(allCalendarLinks);
 
@@ -694,22 +694,17 @@ Generate the email using the provided contract details and timeline, maintaining
     });
 
     // --- Other Event Listeners ---
-    copyEmailButton.addEventListener('click', () => {
-        // Use the older `document.execCommand` for better compatibility in iFrames
-        emailPreviewEl.select();
-        emailPreviewEl.setSelectionRange(0, 99999); // For mobile devices
-        try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                showStatus("Copied to clipboard!", "success", 2000);
-            } else {
-                showStatus("Could not copy text.", "error", 3000);
-            }
-        } catch (err) {
-            console.error('Fallback copy failed: ', err);
-            showStatus("Could not copy text.", "error", 3000);
-        }
-    });
+   copyEmailButton.addEventListener('click', () => {
+    // Create a temporary textarea
+    const temp = document.createElement('textarea');
+    temp.value = emailPreviewEl.innerHTML; // <-- Grabs the HTML as a string
+    document.body.appendChild(temp);
+    temp.select();
+    document.execCommand('copy');
+    document.body.removeChild(temp);
+    showStatus("Copied HTML to clipboard!", "success", 2000);
+});
+       
 
     // Initialize Feather Icons
     feather.replace();
