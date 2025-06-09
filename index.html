@@ -510,43 +510,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // --- API Call ---
-    async function callSecureGeminiViaMake(prompt, base64File) {
-        const webhookUrl = "/api/gemini";
-        const response = await fetch(webhookUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt, base64pdf: base64File })
-        });
+// --- API Call ---
+async function callGeminiAPI(prompt, base64File) {
+    const apiUrl = "/api/gemini";
+    const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, base64pdf: base64File })
+    });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Make.com webhook failed: ${response.statusText} — ${errorText}`);
-        }
-        
-        // First, get the response as plain text to check for Make.com's default "Accepted" message.
-        const responseText = await response.text();
-        if (responseText.toLowerCase() === 'accepted') {
-            throw new Error("Make.com Error: The scenario returned 'Accepted' instead of the AI result. Please ensure your scenario ends with a 'Webhook Response' module that sends the final data.");
-        }
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Gemini API call failed: ${response.statusText} — ${errorText}`);
+    }
 
-        let responseBody;
-        try {
-            // Now, try to parse the text as JSON.
-            responseBody = JSON.parse(responseText);
-        } catch (e) {
-            console.error("Failed to parse JSON:", responseText);
-            throw new Error("The response from the webhook was not valid JSON. Check the Make.com scenario's output.");
-        }
+    const responseBody = await response.json();
 
-        const aiText = responseBody.candidates?.[0]?.content?.parts?.[0]?.text;
-        
-        if (!aiText) {
-            console.error("Full Make.com response:", responseBody);
-            throw new Error("AI response was not found in the expected format from Make.com.");
-        }
-        console.log("✅ AI response text received:", aiText);
-        return aiText;
+    // Adapt this if your Gemini API response structure is different!
+    const aiText = responseBody.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!aiText) {
+        console.error("Full Gemini API response:", responseBody);
+        throw new Error("AI response was not found in the expected format from Gemini API.");
+    }
+    console.log("✅ AI response text received:", aiText);
+    return aiText;
+}
     }
 
     // --- DOM Population Functions ---
@@ -604,7 +593,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const prompt = `You are a highly specialized AI assistant for real estate professionals. Analyze the uploaded real estate contract PDF and extract key data. Return ONLY a single, valid JSON object with no other text, comments, or markdown. The JSON object should follow this exact structure: { "propertyAddress": "123 Main St, Anytown, ST 12345", "summary": "A brief, one-paragraph summary of the contract.", "keyDates": [ { "name": "Event Name", "date": "YYYY-MM-DD" }, { "name": "Closing Date", "date": "YYYY-MM-DD" } ] }. If any data is missing from the contract, use an empty string "" for addresses/summaries or an empty array [] for keyDates.`;
 
             showStatus("Sending to AI via Make.com... (This may take a moment)", "info");
-            const aiResponseText = await callSecureGeminiViaMake(prompt, base64File);
+            const aiResponseText = await callGeminiAPI(prompt, base64File);
 
             showStatus("AI response received. Parsing and displaying results...", "info");
 
