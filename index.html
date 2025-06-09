@@ -524,7 +524,21 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error(`Make.com webhook failed: ${response.statusText} — ${errorText}`);
         }
         
-        const responseBody = await response.json(); 
+        // First, get the response as plain text to check for Make.com's default "Accepted" message.
+        const responseText = await response.text();
+        if (responseText.toLowerCase() === 'accepted') {
+            throw new Error("Make.com Error: The scenario returned 'Accepted' instead of the AI result. Please ensure your scenario ends with a 'Webhook Response' module that sends the final data.");
+        }
+
+        let responseBody;
+        try {
+            // Now, try to parse the text as JSON.
+            responseBody = JSON.parse(responseText);
+        } catch (e) {
+            console.error("Failed to parse JSON:", responseText);
+            throw new Error("The response from the webhook was not valid JSON. Check the Make.com scenario's output.");
+        }
+
         const aiText = responseBody.candidates?.[0]?.content?.parts?.[0]?.text;
         
         if (!aiText) {
@@ -639,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const details = error.message.split('—')[1] || 'No further details available.';
                 displayError = `The API call via Make.com failed. The server responded with: ${details.trim()}`;
             } else {
-                // For other errors (e.g., file validation)
+                // For other errors (e.g., file validation, or our custom Make.com error)
                 displayError = error.message;
             }
             showStatus(displayError, "error", 15000); // Show for longer
