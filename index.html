@@ -519,23 +519,29 @@ async function callGeminiAPI(prompt, base64File) {
         body: JSON.stringify({ prompt, base64pdf: base64File })
     });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Gemini API call failed: ${response.statusText} — ${errorText}`);
-    }
-
+    // Get the response as JSON
     const responseBody = await response.json();
 
-    // Adapt this if your Gemini API response structure is different!
+    // ===== NEW: See and show any Gemini API error =====
+    if (responseBody.error) {
+        // This will print the full error to the browser Console
+        console.error("Gemini API returned an error:", responseBody.error);
+        // This will show a popup alert with the error message
+        alert("Gemini API error: " + (responseBody.error.message || JSON.stringify(responseBody.error)));
+        // This stops the function so the rest of your code doesn't break
+        throw new Error("Gemini API error: " + (responseBody.error.message || JSON.stringify(responseBody.error)));
+    }
+    // ===== END NEW CODE =====
+
+    // Try to get the AI's answer from the response
     const aiText = responseBody.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!aiText) {
         console.error("Full Gemini API response:", responseBody);
         throw new Error("AI response was not found in the expected format from Gemini API.");
     }
-    console.log("✅ AI response text received:", aiText);
     return aiText;
-    }
+}
 
     // --- DOM Population Functions ---
     function populateCalendarLinks(allLinksData) {
