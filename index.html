@@ -524,11 +524,7 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error(`Make.com webhook failed: ${response.statusText} — ${errorText}`);
         }
         
-        // Make.com can sometimes return a stringified JSON. We parse it to get the object.
         const responseBody = await response.json(); 
-        
-        // The actual Gemini response is often nested inside the Make.com response body.
-        // We look for the expected structure from the Gemini API.
         const aiText = responseBody.candidates?.[0]?.content?.parts?.[0]?.text;
         
         if (!aiText) {
@@ -636,7 +632,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error("❌ A critical error occurred:", error);
-            showStatus(`Error: ${error.message}`, "error", 8000);
+            // Create a more user-friendly error message
+            let displayError = "An unknown error occurred. Please check the console for details.";
+            if (error.message.includes("Make.com webhook failed")) {
+                // Extract the detailed message from the webhook failure
+                const details = error.message.split('—')[1] || 'No further details available.';
+                displayError = `The API call via Make.com failed. The server responded with: ${details.trim()}`;
+            } else {
+                // For other errors (e.g., file validation)
+                displayError = error.message;
+            }
+            showStatus(displayError, "error", 15000); // Show for longer
         } finally {
             showLoader(false);
         }
@@ -646,24 +652,9 @@ document.addEventListener('DOMContentLoaded', () => {
     copyEmailButton.addEventListener('click', () => {
         emailPreviewEl.select();
         emailPreviewEl.setSelectionRange(0, 99999);
-        // Use the clipboard API for modern browsers
         navigator.clipboard.writeText(emailPreviewEl.value).then(() => {
             showStatus("Copied to clipboard!", "success", 2000);
         }).catch(err => {
             console.error('Failed to copy text: ', err);
             showStatus("Could not copy text.", "error", 3000);
-        });
-    });
-
-    // Initialize Feather Icons
-    feather.replace();
-});
-</script>
-
-</body>
-</html>
-
-
-<script src="script.js"></script></body>
-</html>
  
