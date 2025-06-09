@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             try {
                 // Send to Make webhook - REPLACE THIS URL WITH YOUR MAKE WEBHOOK URL
-                const response = await fetch('YOUR_MAKE_WEBHOOK_URL_HERE', {
+                const response = await fetch('https://hook.us2.make.com/fbpv4vhqqtyc5ixjl8d2c6cmhio3jiun', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
