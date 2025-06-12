@@ -149,11 +149,7 @@
                     <input type="text" id="clientNames" class="input" placeholder="e.g., John Doe & Jane Smith" required>
                 </div>
                 
-                <div class="mt-4">
-                    <label for="agentName" class="label">3. Your Name (Agent):</label>
-                    <input type="text" id="agentName" class="input" placeholder="e.g., Your Name" required>
-                </div>
-
+               
                 <div class="mt-4">
                     <label for="propertyAddressOptional" class="label">4. Property Address (Optional - if not clear in PDF):</label>
                     <input type="text" id="propertyAddressOptional" class="input" placeholder="e.g., 123 Main St, Anytown, USA">
@@ -399,10 +395,6 @@ We're in this together! If any questions pop up, or if you just want to chat abo
 
 Let's get this done!
 
-Warmly,
-
-{agentName}
-Your Real Estate Partner
 
 ---
 Email generated on: {generatedDate}
@@ -440,7 +432,7 @@ This is an automated message to help you stay informed. Always refer to your off
         const emailData = {
             clientNames: this.formatClientNames(clientInfo.clientNames),
             propertyAddress: contractData.propertyAddress || clientInfo.propertyAddressOptional || "The Property",
-            agentName: clientInfo.agentName || 'Your Real Estate Agent',
+            
             keyDatesList: formattedKeyDates.length > 0 ? formattedKeyDates.map(kd => `- ${kd.name}: ${kd.date}`).join('\n') : "Key dates will be confirmed shortly.",
             keyDates: formattedKeyDates,
             contractSummary: contractData.summary || 'Details are being compiled.',
@@ -463,7 +455,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const contractForm = document.getElementById('contractForm');
     const contractFileEl = document.getElementById('contractFile');
     const clientNamesEl = document.getElementById('clientNames');
-    const agentNameEl = document.getElementById('agentName');
     const propertyAddressOptionalEl = document.getElementById('propertyAddressOptional');
     const analyzeButton = document.getElementById('analyzeButton');
     const loaderEl = document.getElementById('loader');
@@ -584,7 +575,6 @@ async function callGeminiAPI(prompt, base64File) {
             const file = contractFileEl.files[0];
             const clientInfo = {
                 clientNames: clientNamesEl.value.trim(),
-                agentName: agentNameEl.value.trim(),
                 propertyAddressOptional: propertyAddressOptionalEl.value.trim()
             };
 
@@ -681,8 +671,7 @@ try {
                 <ul>${keyDatesHtml}</ul>
                 ${specialTermsText ? `<p><strong>FYI:</strong> This contract includes a contingency that it's ${specialTermsText.toLowerCase()}</p>` : ''}
                 <p>I'll be here to guide you through each step of this exciting journey, so please don't hesitate to reach out if you have any questions – big or small. I’m here to support you!</p>
-                <p>Warmly,</p>
-                <p>${clientInfo.agentName}</p>
+               
                 <br>
                 <p><em><small>This was prepared with the help of my trusty AI assistant. Make sure you refer to the original document for detailed information.</small></em></p>
             `;
