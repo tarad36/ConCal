@@ -207,9 +207,9 @@
 
             <div class="card results-section" id="emailSection">
                 <h3 class="flex items-center"><i data-feather="mail" class="mr-2"></i>Generated Client Email</h3>
-                <div id="emailPreview" class="prose prose-sm max-w-none bg-white p-4 rounded border border-gray-200 mb-2" style="min-height: 200px;"></div>
+                <div id="emailPreview" contenteditable="true" class="prose prose-sm max-w-none bg-white p-4 rounded border border-gray-200 mb-2" style="min-height: 200px;"></div>
 <button id="copyEmailButton" class="button mt-2">
-    <i data-feather="copy" class="feather"></i> Copy Email HTML
+    <i data-feather="copy" class="feather"></i> Copy Email
 </button>
             </div>
 
@@ -714,16 +714,27 @@ try {
         }
     });
 
-    // --- Other Event Listeners ---
-   copyEmailButton.addEventListener('click', () => {
-    // Create a temporary textarea
-    const temp = document.createElement('textarea');
-    temp.value = emailPreviewEl.innerHTML; // <-- Grabs the HTML as a string
-    document.body.appendChild(temp);
-    temp.select();
-    document.execCommand('copy');
-    document.body.removeChild(temp);
-    showStatus("Copied HTML to clipboard!", "success", 2000);
+  // --- Event Listener for the NEW Rich Text Copy Button ---
+copyEmailButton.addEventListener('click', () => {
+    // Get the HTML content from the preview box.
+    const htmlToCopy = emailPreviewEl.innerHTML;
+
+    // The modern way to write rich text to the clipboard.
+    navigator.clipboard.write([
+        new ClipboardItem({
+            // We create a "blob" of HTML data. A blob is just a way to handle raw data.
+            "text/html": new Blob([htmlToCopy], { type: "text/html" }),
+            // We also provide a plain text version as a fallback for apps that don't support HTML.
+            "text/plain": new Blob([emailPreviewEl.innerText], { type: "text/plain" })
+        })
+    ]).then(() => {
+        // If the copy is successful, show a confirmation message.
+        showStatus("✅ Formatted email copied to clipboard!", "success", 3000);
+    }).catch(err => {
+        // If it fails, log the error to the console.
+        console.error('Failed to copy HTML: ', err);
+        showStatus("❌ Oops! Could not copy email.", "error", 4000);
+    });
 });
        
 
