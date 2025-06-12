@@ -666,11 +666,13 @@ try {
             const emailSubject = `🎉 WE DID IT! ${finalPropertyAddress} is Under Contract!`;
             const emailBody = `
                 <p>Hi ${clientInfo.clientNames},</p>
-                <p>I'm absolutely thrilled to share some fantastic news – we got your offer accepted on ${finalPropertyAddress}! 🎉 This is such a huge milestone, and I couldn't be happier for you. We've been working toward this, and it's amazing to see it all come together!</p>
-                <p>We locked in a purchase price of <strong>${purchasePrice}</strong>, and here’s a quick rundown of the key dates we’ve got coming up:</p>
+                <p>Congratulations!  We are officially under contract on ${finalPropertyAddress}!</p>
+                <p>Here’s a quick rundown of the key dates and terms in the contract:</p>
+               <p>Purchase price is <strong>${purchasePrice}</strong>,</p>
                 <ul>${keyDatesHtml}</ul>
-                ${specialTermsText ? `<p><strong>FYI:</strong> This contract includes a contingency that it's ${specialTermsText.toLowerCase()}</p>` : ''}
-                <p>I'll be here to guide you through each step of this exciting journey, so please don't hesitate to reach out if you have any questions – big or small. I’m here to support you!</p>
+                ${specialTermsText ? `<p><strong>Additional Terms:</strong> This contract includes a contingency that it's ${specialTermsText.toLowerCase()}</p>` : ''}
+                <p>These deadlines are important, so I've included quicklinks for you to add them to your calendar.</p>
+Any questions aAny questions along the way? Just give me a call or shoot me a text – I'm here to help!</p>
                
                 <br>
                 <p><em><small>This was prepared with the help of my trusty AI assistant. Make sure you refer to the original document for detailed information.</small></em></p>
