@@ -645,6 +645,8 @@ showStatus("AI response received. Parsing and displaying results...", "info");
 const match = aiResponseText.match(/```json\s*([\s\S]*?)```/i);
 const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
 
+console.log("Raw AI response:", aiResponseText);
+console.log("Extracted JSON to parse:", cleanedJsonText); 
 let contractData = {};
 try {
     contractData = JSON.parse(cleanedJsonText);
