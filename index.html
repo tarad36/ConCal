@@ -609,13 +609,10 @@ The JSON object should have this exact structure:
   ]
 }
 
-Ensure all dates are in YYYY-MM-DD format. Extract all critical dates and deadlines mentioned in the contract.`;n't be happier about how this came together..." "This is exactly what we were working toward – and we did it!"
-Generate the email using the provided contract details and timeline, maintaining this warm, professional, and celebratory tone throughout.`;
+Ensure all dates are in YYYY-MM-DD format. Extract all critical dates and deadlines mentioned in the contract.`;
 
-
-
-            showStatus("Sending to your AI Assistant... (This may take a moment)", "info");
-const aiResponseText = await callGeminiAPI(prompt, base64File);
+        showStatus("Sending to your AI Assistant... (This may take a moment)", "info");
+        const aiResponseText = await callGeminiAPI(prompt, base64File);
 
 showStatus("AI response received. Parsing and displaying results...", "info");
 
