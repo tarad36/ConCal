@@ -636,7 +636,7 @@ Generate the email using the provided contract details and timeline, maintaining
 
 
 
-            showStatus("Sending to AI Nathalie... (This may take a moment)", "info");
+            showStatus("Sending to your AI Assistant... (This may take a moment)", "info");
             const aiResponseText = await callGeminiAPI(prompt, base64File);
 
             showStatus("AI response received. Parsing and displaying results...", "info");
@@ -687,7 +687,7 @@ Generate the email using the provided contract details and timeline, maintaining
             if (error.message.includes("Make.com webhook failed")) {
                 // Extract the detailed message from the webhook failure
                 const details = error.message.split('—')[1] || 'No further details available.';
-                displayError = `The API call via Make.com failed. The server responded with: ${details.trim()}`;
+                displayError = `The API call failed. The server responded with: ${details.trim()}`;
             } else {
                 // For other errors (e.g., file validation, or our custom Make.com error)
                 displayError = error.message;
