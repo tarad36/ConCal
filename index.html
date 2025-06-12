@@ -366,40 +366,6 @@ class CalendarUtils {
         }
         return allLinks;
     }
-}
-
-// --- Class: EmailTemplates ---
-class EmailTemplates {
-    getClientEmailTemplate() {
-        return `Subject: Congratulations on Going Under Contract for {propertyAddress}! 🎉
-
-Hi {clientNames},
-
-Fantastic news! Congratulations on successfully going under contract for the property at {propertyAddress}! This is a huge step, and I'm so excited for you.
-
-To help keep everything on track, here's a quick overview of the important dates and a brief summary based on the contract:
-
-Property: {propertyAddress}
-
-Contract Snapshot:
-------------------
-{contractSummary}
-
-Key Milestones Ahead:
----------------------
-{keyDatesList}
-
-Please take a moment to review these dates. I'll also be sending out calendar invitations for these milestones to help you stay organized.
-
-We're in this together! If any questions pop up, or if you just want to chat about the next steps, please don't hesitate to reach out. 
-
-Let's get this done!
-
-
----
-Email generated on: {generatedDate}
-This is an automated message to help you stay informed. Always refer to your official contract documents for definitive terms and dates.`;
-    }
 
     formatClientNames(clientNamesStr) {
         if (!clientNamesStr) return "Valued Client";
@@ -671,11 +637,11 @@ try {
                <p>Purchase price is <strong>${purchasePrice}</strong>,</p>
                 <ul>${keyDatesHtml}</ul>
                 ${specialTermsText ? `<p><strong>Additional Terms:</strong> This contract includes a contingency that it's ${specialTermsText.toLowerCase()}</p>` : ''}
-                <p>These deadlines are important, so I've included quicklinks for you to add them to your calendar.</p>
-Any questions aAny questions along the way? Just give me a call or shoot me a text – I'm here to help!</p>
+                <p>Next Steps: I'll be monitoring all these deadlines closely and will keep you informed every step of the way. You can also add these deadlines to your calendar using the links I've included here.</p>
+                <p>This is an exciting milestone! Please don't hesitate to reach out if you have any questions – I'm here to support you throughout this process.</p>
                
                 <br>
-                <p><em><small>This was prepared with the help of my trusty AI assistant. Make sure you refer to the original document for detailed information.</small></em></p>
+                <p><em><small>This was prepared with the help of my trusty AI assistant. Make sure to refer to the original document for detailed information.</small></em></p>
             `;
 
             // Display the email in the preview box
