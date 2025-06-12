@@ -637,20 +637,31 @@ Generate the email using the provided contract details and timeline, maintaining
 
 
             showStatus("Sending to your AI Assistant... (This may take a moment)", "info");
-            const aiResponseText = await callGeminiAPI(prompt, base64File);
+const aiResponseText = await callGeminiAPI(prompt, base64File);
 
-            showStatus("AI response received. Parsing and displaying results...", "info");
+showStatus("AI response received. Parsing and displaying results...", "info");
 
-            const cleanedJsonText = aiResponseText.replace(/^```json\s*|```$/g, '').trim();
-            const contractData = JSON.parse(cleanedJsonText);
-            const keyDates = Array.isArray(contractData.keyDates) ? contractData.keyDates : [];
-            const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || 'N/A';
+// Robust code block extraction
+const match = aiResponseText.match(/```json\s*([\s\S]*?)```/i);
+const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
 
-            displayPropertyAddressEl.textContent = finalPropertyAddress;
-            const specialTermsText = contractData.specialTerms || '';
-            displayContractSummaryEl.textContent = specialTermsText ? 
-            `Special terms: ${specialTermsText}` : 
-            'Standard contract terms apply';
+let contractData = {};
+try {
+    contractData = JSON.parse(cleanedJsonText);
+} catch (e) {
+    showStatus("❌ Failed to parse AI response as JSON. Please check the output or try again.", "error");
+    console.error("Failed to parse JSON:", cleanedJsonText, e);
+    return;
+}
+
+const keyDates = Array.isArray(contractData.keyDates) ? contractData.keyDates : [];
+const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || 'N/A';
+
+displayPropertyAddressEl.textContent = finalPropertyAddress;
+const specialTermsText = contractData.specialTerms || '';
+displayContractSummaryEl.textContent = specialTermsText ? 
+    `Special terms: ${specialTermsText}` : 
+    'Standard contract terms apply';
 
             keyDatesTableBodyEl.innerHTML = '';
             if (keyDates.length) {
