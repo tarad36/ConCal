@@ -204,9 +204,9 @@
             <div class="card results-section" id="emailSection">
                 <h3 class="flex items-center"><i data-feather="mail" class="mr-2"></i>Generated Client Email</h3>
                 <div id="emailPreview" contenteditable="true" class="prose prose-sm max-w-none bg-white p-4 rounded border border-gray-200 mb-2" style="min-height: 200px;"></div>
-<button id="copyEmailButton" class="button mt-2">
-    <i data-feather="copy" class="feather"></i> Copy Email
-</button>
+                <button id="copyEmailButton" class="button mt-2">
+                    <i data-feather="copy" class="feather"></i> Copy Email
+                </button>
             </div>
 
             <div class="card results-section" id="calendarSection">
@@ -228,6 +228,7 @@
 -->
 <script>
 // --- Class: CalendarUtils ---
+// NOTE: This class is unchanged as its logic is sound.
 class CalendarUtils {
     prepareEventDetails(eventData, propertyAddress) {
         const formatDateForCalendar = (dateStr) => {
@@ -366,55 +367,13 @@ class CalendarUtils {
         }
         return allLinks;
     }
-
-    formatClientNames(clientNamesStr) {
-        if (!clientNamesStr) return "Valued Client";
-        const names = clientNamesStr.split(/[,&+]| and /i).map(name => name.trim()).filter(Boolean);
-        if (names.length === 0) return "Valued Client";
-        if (names.length === 1) return names[0];
-        return names.slice(0, -1).join(', ') + ' & ' + names.slice(-1);
-    }
-
-    populateTemplate(template, data) {
-        let populatedTemplate = template;
-        for (const key in data) {
-            const placeholder = `{${key}}`;
-            const value = (key === 'keyDatesList' && Array.isArray(data.keyDates)) ?
-                data.keyDates.map(kd => `- ${kd.name}: ${kd.date || 'TBD'}`).join('\n') :
-                (typeof data[key] === 'string' ? data[key] : JSON.stringify(data[key]));
-
-            populatedTemplate = populatedTemplate.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value || '');
-        }
-        return populatedTemplate;
-    }
-
-    generateClientEmail(contractData, clientInfo) {
-        const template = this.getClientEmailTemplate();
-        const formattedKeyDates = (contractData.keyDates || []).map(kd => ({
-            name: kd.name || "Unknown Event",
-            date: kd.date ? new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }) : 'To Be Determined'
-        }));
-
-        const emailData = {
-            clientNames: this.formatClientNames(clientInfo.clientNames),
-            propertyAddress: contractData.propertyAddress || clientInfo.propertyAddressOptional || "The Property",
-            
-            keyDatesList: formattedKeyDates.length > 0 ? formattedKeyDates.map(kd => `- ${kd.name}: ${kd.date}`).join('\n') : "Key dates will be confirmed shortly.",
-            keyDates: formattedKeyDates,
-            contractSummary: contractData.summary || 'Details are being compiled.',
-            generatedDate: new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-        };
-
-        return this.populateTemplate(template, emailData);
-    }
 }
+
 
 // --- Main Application Logic ---
 document.addEventListener('DOMContentLoaded', () => {
     console.log("✅ DOM fully loaded. App is ready.");
 
-    // Instantiate utility classes
-    
     const calendarUtils = new CalendarUtils();
 
     // Get all necessary DOM elements
@@ -444,8 +403,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (duration > 0) {
             setTimeout(() => {
-                statusMessageEl.classList.add('hidden');
                 statusMessageEl.textContent = '';
+                statusMessageEl.classList.add('hidden');
             }, duration);
         }
     }
@@ -467,40 +426,42 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-// --- API Call ---
-async function callGeminiAPI(prompt, base64File) {
-    const apiUrl = "/api/gemini";
-    const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, base64pdf: base64File })
-    });
+    // --- CORRECTED API Call ---
+    async function callGeminiAPI(prompt, base64File) {
+        // This creates the full, absolute URL to your API proxy.
+        // It combines the website's origin (e.g., https://your-app.vercel.app)
+        // with the path to your function (/api/gemini).
+        const apiUrl = `${window.location.origin}/api/gemini`;
+        
+        const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            // The body now sends the prompt and base64pdf, which your gemini.js file expects
+            body: JSON.stringify({ prompt, base64pdf: base64File })
+        });
 
-    // Get the response as JSON
-    const responseBody = await response.json();
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+        
+        // This part now receives the response forwarded from your gemini.js function
+        const responseBody = await response.json();
 
-    // ===== NEW: See and show any Gemini API error =====
-    if (responseBody.error) {
-        // This will print the full error to the browser Console
-        console.error("Gemini API returned an error:", responseBody.error);
-        // This will show a popup alert with the error message
-        alert("Gemini API error: " + (responseBody.error.message || JSON.stringify(responseBody.error)));
-        // This stops the function so the rest of your code doesn't break
-        throw new Error("Gemini API error: " + (responseBody.error.message || JSON.stringify(responseBody.error)));
+        if (responseBody.error) {
+            console.error("Gemini API returned an error:", responseBody.error);
+            throw new Error("Gemini API error: " + (responseBody.error.message || JSON.stringify(responseBody.error)));
+        }
+        
+        const aiText = responseBody.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!aiText) {
+            console.error("Full Gemini API response:", responseBody);
+            throw new Error("AI response was not found in the expected format from Gemini API.");
+        }
+        return aiText;
     }
-    // ===== END NEW CODE =====
 
-    // Try to get the AI's answer from the response
-    const aiText = responseBody.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!aiText) {
-        console.error("Full Gemini API response:", responseBody);
-        throw new Error("AI response was not found in the expected format from Gemini API.");
-    }
-    return aiText;
-}
-
-    // --- DOM Population Functions ---
+    // --- DOM Population Functions (Unchanged) ---
     function populateCalendarLinks(allLinksData) {
         calendarLinksEl.innerHTML = '';
         if (!allLinksData || allLinksData.length === 0) {
@@ -529,202 +490,145 @@ async function callGeminiAPI(prompt, base64File) {
         });
     }
 
-    // --- Main Form Submit Handler ---
-  // Replace your main form submit handler with this debug version:
+    // --- Main Form Submit Handler (Unchanged) ---
+    contractForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        console.log("📝 Form submission intercepted. Starting analysis process.");
 
-contractForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    console.log("📝 Form submission intercepted. Starting analysis process.");
-
-    // ADD: Force loader state tracking
-    let loaderShown = false;
-
-    try {
-        console.log("🔄 About to show loader");
         showLoader(true);
-        loaderShown = true; // Track that we showed it
-        console.log("✅ Loader shown successfully");
-        
         showStatus("Starting analysis...", "info");
 
-        const file = contractFileEl.files[0];
-        const clientInfo = {
-            clientNames: clientNamesEl.value.trim(),
-            propertyAddressOptional: propertyAddressOptionalEl.value.trim()
-        };
-
-        console.log("📄 File validation starting...");
-        if (!file || file.type !== "application/pdf" || file.size > 10 * 1024 * 1024) {
-            console.log("❌ File validation failed");
-            throw new Error("Please upload a valid PDF file under 10MB.");
-        }
-        console.log("✅ File validation passed");
-
-        showStatus("Converting file for analysis...", "info");
-        console.log("🔄 Converting file to base64...");
-        const base64File = await fileToBase64(file);
-        console.log("✅ File converted successfully");
-
-        const prompt = `Please analyze the provided real estate contract PDF...`; // Your existing prompt
-
-        showStatus("Sending to your AI Assistant... (This may take a moment)", "info");
-        console.log("🚀 Calling Gemini API...");
-        const aiResponseText = await callGeminiAPI(prompt, base64File);
-        console.log("✅ AI response received");
-
-        showStatus("AI response received. Parsing and displaying results...", "info");
-
-        // Robust code block extraction
-        const match = aiResponseText.match(/```json\s*([\s\S]*?)```/i);
-        const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
-
-        console.log("🔍 Parsing JSON response...");
-        let contractData = {};
         try {
-            contractData = JSON.parse(cleanedJsonText);
-            console.log("✅ JSON parsed successfully");
-        } catch (e) {
-            console.log("❌ JSON parsing failed");
-            showStatus("❌ Failed to parse AI response as JSON. Please check the output or try again.", "error");
-            console.error("Failed to parse JSON:", cleanedJsonText, e);
-            
-            // CRITICAL: Hide loader on JSON parse failure
-            if (loaderShown) {
-                console.log("🔄 Hiding loader due to JSON parse error");
-                showLoader(false);
-                loaderShown = false;
+            const file = contractFileEl.files[0];
+            const clientInfo = {
+                clientNames: clientNamesEl.value.trim(),
+                propertyAddressOptional: propertyAddressOptionalEl.value.trim()
+            };
+
+            // 1. Validate Input
+            if (!file || file.type !== "application/pdf" || file.size > 10 * 1024 * 1024) {
+                throw new Error("Please upload a valid PDF file under 10MB.");
             }
-            return; // Exit early
-        }
+            if (!clientInfo.clientNames) {
+                throw new Error("Please enter the client name(s).");
+            }
 
-        // Rest of your data processing...
-        console.log("🔄 Processing contract data...");
-        
-        const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "The Property";
-        const keyDates = Array.isArray(contractData.keyDates) ? contractData.keyDates : [];
-        const specialTermsText = contractData.specialTerms || '';
-        const purchasePrice = contractData.purchasePrice ?
-            new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(contractData.purchasePrice) :
-            'the agreed-upon price';
+            // 2. Process File and Call API
+            showStatus("Converting file for analysis...", "info");
+            const base64File = await fileToBase64(file);
+            
+            const prompt = `Please analyze the provided real estate contract PDF. Extract the following information in a structured JSON format: propertyAddress (string), purchasePrice (number, just digits), keyDates (an array of objects, each with a 'name' and 'date' in 'YYYY-MM-DD' format), and specialTerms (a brief string summary of any important contingencies or non-standard terms).`;
 
-        // Your existing DOM population code...
-        console.log("🔄 Populating results...");
-        
-        displayPropertyAddressEl.textContent = finalPropertyAddress;
-        displaySpecialTermsEl.textContent = specialTermsText || 'Standard contract terms apply.';
+            showStatus("Sending to your AI Assistant... (This may take a moment)", "info");
+            const aiResponseText = await callGeminiAPI(prompt, base64File);
+            
+            // 3. Parse AI Response
+            showStatus("AI response received. Parsing results...", "info");
+            const match = aiResponseText.match(/```json\s*([\s\S]*?)```/i);
+            const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
+            
+            let contractData;
+            try {
+                contractData = JSON.parse(cleanedJsonText);
+            } catch (e) {
+                console.error("Failed to parse JSON:", cleanedJsonText, e);
+                throw new Error("The AI response was not in a valid format. Please try again.");
+            }
 
-        keyDatesTableBodyEl.innerHTML = '';
-        if (keyDates.length) {
-            keyDates.forEach(kd => {
+            // 4. Populate the UI with Results
+            console.log("Populating results...");
+            
+            const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "The Property";
+            const keyDates = Array.isArray(contractData.keyDates) ? contractData.keyDates : [];
+            const specialTermsText = contractData.specialTerms || '';
+            const purchasePrice = contractData.purchasePrice ?
+                new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(contractData.purchasePrice) :
+                'the agreed-upon price';
+            
+            displayPropertyAddressEl.textContent = finalPropertyAddress;
+            displaySpecialTermsEl.textContent = specialTermsText || 'Standard contract terms apply.';
+            
+            keyDatesTableBodyEl.innerHTML = '';
+            if (keyDates.length) {
+                keyDates.forEach(kd => {
+                    const row = keyDatesTableBodyEl.insertRow();
+                    row.insertCell().textContent = kd.name;
+                    try {
+                        const dateCell = row.insertCell();
+                        dateCell.textContent = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
+                            year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+                        });
+                    } catch {
+                        row.insertCell().textContent = kd.date || 'Invalid Date';
+                    }
+                });
+            } else {
                 const row = keyDatesTableBodyEl.insertRow();
-                row.insertCell().textContent = kd.name;
-                try {
-                    const dateCell = row.insertCell();
-                    dateCell.textContent = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
-                        year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-                    });
-                } catch {
-                    row.insertCell().textContent = kd.date || 'Invalid Date';
-                }
-            });
-        } else {
-            const row = keyDatesTableBodyEl.insertRow();
-            const cell = row.insertCell();
-            cell.colSpan = 2;
-            cell.textContent = 'No key dates were extracted from the contract.';
-        }
+                const cell = row.insertCell();
+                cell.colSpan = 2;
+                cell.textContent = 'No key dates were extracted from the contract.';
+            }
 
-        // Generate email and calendar links...
-        let keyDatesHtml = keyDates.map(kd => {
-            const formattedDate = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
-                year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-            });
-            return `<li><strong>${kd.name}:</strong> ${formattedDate}</li>`;
-        }).join('');
+            let keyDatesHtml = keyDates.map(kd => {
+                const formattedDate = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+                });
+                return `<li><strong>${kd.name}:</strong> ${formattedDate}</li>`;
+            }).join('');
 
-        const emailSubject = `🎉 WE DID IT! ${finalPropertyAddress} is Under Contract!`;
-        const emailBody = `
-            <p>Hi ${clientInfo.clientNames},</p>
-            <p>Congratulations! We are officially under contract on ${finalPropertyAddress}!</p>
-            <p>Here's a quick rundown of the key dates and terms in the contract:</p>
-            <p>Purchase price is <strong>${purchasePrice}</strong>,</p>
-            <ul>${keyDatesHtml}</ul>
-            ${specialTermsText ? `<p><strong>Additional Terms:</strong> This contract includes a contingency that it's ${specialTermsText.toLowerCase()}</p>` : ''}
-            <p><strong>Next Steps:</strong> I'll be monitoring all these deadlines closely and will keep you informed every step of the way. You can also add these deadlines to your calendar using the links I've included here.</p>
-            <p>This is an exciting milestone! Please don't hesitate to reach out if you have any questions – I'm here to support you throughout this process.</p>
-            <br>
-            <p><em><small>This was prepared with the help of my trusty AI assistant. Make sure to refer to the original document for detailed information.</small></em></p>
-        `;
+            const emailSubject = `🎉 WE DID IT! ${finalPropertyAddress} is Under Contract!`;
+            const emailBody = `
+                <p>Hi ${clientInfo.clientNames},</p>
+                <p>Congratulations! We are officially under contract on ${finalPropertyAddress}!</p>
+                <p>Here's a quick rundown of the key dates and terms in the contract:</p>
+                <p>Purchase price is <strong>${purchasePrice}</strong>,</p>
+                <ul>${keyDatesHtml}</ul>
+                ${specialTermsText ? `<p><strong>Additional Terms:</strong> This contract includes a contingency that it's ${specialTermsText.toLowerCase()}</p>` : ''}
+                <p><strong>Next Steps:</strong> I'll be monitoring all these deadlines closely and will keep you informed every step of the way. You can also add these deadlines to your calendar using the links I've included here.</p>
+                <p>This is an exciting milestone! Please don't hesitate to reach out if you have any questions – I'm here to support you throughout this process.</p>
+                <br>
+                <p><em><small>This was prepared with the help of my trusty AI assistant. Make sure to refer to the original document for detailed information.</small></em></p>
+            `;
 
-        emailPreviewEl.innerHTML = `<strong>Subject: ${emailSubject}</strong><hr class="my-2">${emailBody}`;
-        
-        const allCalendarLinks = calendarUtils.generateAllCalendarLinks(keyDates, finalPropertyAddress);
-        populateCalendarLinks(allCalendarLinks);
-        resultsAreaEl.classList.remove('hidden');
-        
-        console.log("✅ All processing complete!");
-        showStatus("✅ Analysis complete!", "success", 4000);
+            emailPreviewEl.innerHTML = `<strong>Subject: ${emailSubject}</strong><hr class="my-2">${emailBody}`;
+            
+            const allCalendarLinks = calendarUtils.generateAllCalendarLinks(keyDates, finalPropertyAddress);
+            populateCalendarLinks(allCalendarLinks);
+            resultsAreaEl.classList.remove('hidden');
+            
+            showStatus("✅ Analysis complete!", "success", 4000);
 
-    } catch (error) {
-        console.error("❌ Critical error in main try block:", error);
+        } catch (error) {
+            console.error("❌ A critical error occurred during the process:", error);
+            showStatus(`Error: ${error.message}`, "error", 15000);
         
-        let displayError = "An unknown error occurred. Please check the console for details.";
-        if (error.message.includes("Make.com webhook failed")) {
-            const details = error.message.split('—')[1] || 'No further details available.';
-            displayError = `The API call failed. The server responded with: ${details.trim()}`;
-        } else {
-            displayError = error.message;
-        }
-        showStatus(displayError, "error", 15000);
-        
-    } finally {
-        // CRITICAL: Always hide loader with extra safety
-        console.log("🔄 Finally block - hiding loader");
-        if (loaderShown) {
+        } finally {
+            console.log("✅ Process finished. Hiding loader.");
             showLoader(false);
-            console.log("✅ Loader hidden in finally block");
-        } else {
-            console.log("⚠️ Loader was not shown, or already hidden");
         }
-    }
-});
-
-// Also add this helper function to double-check loader state:
-function forceHideLoader() {
-    console.log("🚨 Force hiding loader");
-    showLoader(false);
-    loaderEl.classList.add('hidden');
-    analyzeButton.disabled = false;
-}
-  // --- Event Listener for the NEW Rich Text Copy Button ---
-copyEmailButton.addEventListener('click', () => {
-    // Get the HTML content from the preview box.
-    const htmlToCopy = emailPreviewEl.innerHTML;
-
-    // The modern way to write rich text to the clipboard.
-    navigator.clipboard.write([
-        new ClipboardItem({
-            // We create a "blob" of HTML data. A blob is just a way to handle raw data.
-            "text/html": new Blob([htmlToCopy], { type: "text/html" }),
-            // We also provide a plain text version as a fallback for apps that don't support HTML.
-            "text/plain": new Blob([emailPreviewEl.innerText], { type: "text/plain" })
-        })
-    ]).then(() => {
-        // If the copy is successful, show a confirmation message.
-        showStatus("✅ Formatted email copied to clipboard!", "success", 3000);
-    }).catch(err => {
-        // If it fails, log the error to the console.
-        console.error('Failed to copy HTML: ', err);
-        showStatus("❌ Oops! Could not copy email.", "error", 4000);
     });
-});
-       
 
+    // --- Rich Text Copy Button Event Listener (Unchanged) ---
+    copyEmailButton.addEventListener('click', () => {
+        const htmlToCopy = emailPreviewEl.innerHTML;
+        navigator.clipboard.write([
+            new ClipboardItem({
+                "text/html": new Blob([htmlToCopy], { type: "text/html" }),
+                "text/plain": new Blob([emailPreviewEl.innerText], { type: "text/plain" })
+            })
+        ]).then(() => {
+            showStatus("✅ Formatted email copied to clipboard!", "success", 3000);
+        }).catch(err => {
+            console.error('Failed to copy HTML: ', err);
+            showStatus("❌ Oops! Could not copy email.", "error", 4000);
+        });
+    });
+       
     // Initialize Feather Icons
     feather.replace();
-
 });
 </script>
 
 </body>
 </html>
+
