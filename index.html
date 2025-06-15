@@ -450,23 +450,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ===== MODIFIED FUNCTION =====
-    // This version is more explicit about adding and removing the 'hidden' class,
-    // which can prevent issues with unexpected state.
     function showLoader(show) {
-        // Disable the button when the loader is active to prevent multiple submissions.
+        loaderEl.classList.toggle('hidden', !show);
         analyzeButton.disabled = show;
-
         if (show) {
-            // To show the loader:
-            // 1. Ensure the results area is hidden.
             resultsAreaEl.classList.add('hidden');
-            // 2. Remove the 'hidden' class from the loader to make it visible.
-            loaderEl.classList.remove('hidden');
-        } else {
-            // To hide the loader:
-            // 1. Add the 'hidden' class to make it invisible.
-            loaderEl.classList.add('hidden');
         }
     }
 
@@ -710,6 +698,7 @@ copyEmailButton.addEventListener('click', () => {
 
     // Initialize Feather Icons
     feather.replace();
+
 });
 </script>
 
