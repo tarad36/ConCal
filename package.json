@@ -2,6 +2,9 @@
   "name": "concal",
   "version": "1.0.0",
   "scripts": {
-    "build:css": "tailwindcss -i ./src/styles.css -o ./public/styles.css --minify"
+    "build:css": "tailwindcss -i ./src/styles.css -o ./styles.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.4"
   }
 }
