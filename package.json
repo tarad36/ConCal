@@ -1,0 +1,7 @@
+{
+  "name": "concal",
+  "version": "1.0.0",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/styles.css -o ./public/styles.css --minify"
+  }
+}
