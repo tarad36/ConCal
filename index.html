@@ -530,148 +530,172 @@ async function callGeminiAPI(prompt, base64File) {
     }
 
     // --- Main Form Submit Handler ---
-    contractForm.addEventListener('submit', async (event) => {
-        event.preventDefault(); // This is CRITICAL. It stops the page from reloading.
-        console.log("📝 Form submission intercepted. Starting analysis process.");
+  // Replace your main form submit handler with this debug version:
 
-        try {
-            showLoader(true);
-            showStatus("Starting analysis...", "info");
+contractForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    console.log("📝 Form submission intercepted. Starting analysis process.");
 
-            const file = contractFileEl.files[0];
-            const clientInfo = {
-                clientNames: clientNamesEl.value.trim(),
-                propertyAddressOptional: propertyAddressOptionalEl.value.trim()
-            };
+    // ADD: Force loader state tracking
+    let loaderShown = false;
 
-            if (!file || file.type !== "application/pdf" || file.size > 10 * 1024 * 1024) {
-                throw new Error("Please upload a valid PDF file under 10MB.");
-            }
+    try {
+        console.log("🔄 About to show loader");
+        showLoader(true);
+        loaderShown = true; // Track that we showed it
+        console.log("✅ Loader shown successfully");
+        
+        showStatus("Starting analysis...", "info");
 
-            showStatus("Converting file for analysis...", "info");
-            const base64File = await fileToBase64(file);
-const prompt = `Please analyze the provided real estate contract PDF. Extract the following information and return it ONLY as a valid JSON object. Do not add any text or explanation outside of the JSON structure.
+        const file = contractFileEl.files[0];
+        const clientInfo = {
+            clientNames: clientNamesEl.value.trim(),
+            propertyAddressOptional: propertyAddressOptionalEl.value.trim()
+        };
 
-The JSON object should have this exact structure:
-{
-  "propertyAddress": "The full property address, including city, state, and zip code.",
-  "purchasePrice": "The final purchase price as a number, without currency symbols or commas.",
-  "specialTerms": "A brief summary of any non-standard terms, contingencies (like 'subject to seller finding suitable housing'), or important addenda. If none, leave this as an empty string.",
-  "keyDates": [
-    {
-      "name": "Name of the event or deadline (e.g., 'Mortgage Commitment Deadline', 'Inspection Deadline', 'Closing Date')",
-      "date": "The date for the event in YYYY-MM-DD format."
-    }
-  ]
-}
+        console.log("📄 File validation starting...");
+        if (!file || file.type !== "application/pdf" || file.size > 10 * 1024 * 1024) {
+            console.log("❌ File validation failed");
+            throw new Error("Please upload a valid PDF file under 10MB.");
+        }
+        console.log("✅ File validation passed");
 
-Ensure all dates are in YYYY-MM-DD format. Extract all critical dates and deadlines mentioned in the contract.`;
+        showStatus("Converting file for analysis...", "info");
+        console.log("🔄 Converting file to base64...");
+        const base64File = await fileToBase64(file);
+        console.log("✅ File converted successfully");
+
+        const prompt = `Please analyze the provided real estate contract PDF...`; // Your existing prompt
 
         showStatus("Sending to your AI Assistant... (This may take a moment)", "info");
+        console.log("🚀 Calling Gemini API...");
         const aiResponseText = await callGeminiAPI(prompt, base64File);
+        console.log("✅ AI response received");
 
-showStatus("AI response received. Parsing and displaying results...", "info");
+        showStatus("AI response received. Parsing and displaying results...", "info");
 
-// Robust code block extraction
-const match = aiResponseText.match(/```json\s*([\s\S]*?)```/i);
-const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
+        // Robust code block extraction
+        const match = aiResponseText.match(/```json\s*([\s\S]*?)```/i);
+        const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
 
-console.log("Raw AI response:", aiResponseText);
-console.log("Extracted JSON to parse:", cleanedJsonText); 
-let contractData = {};
-try {
-    contractData = JSON.parse(cleanedJsonText);
-} catch (e) {
-    showStatus("❌ Failed to parse AI response as JSON. Please check the output or try again.", "error");
-    console.error("Failed to parse JSON:", cleanedJsonText, e);
-    showLoader(false); // ← ADD THIS LINE!
-    return;
-}
-
-// --- DATA HANDLING AND DISPLAY ---
-            const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "The Property";
-            const keyDates = Array.isArray(contractData.keyDates) ? contractData.keyDates : [];
-            const specialTermsText = contractData.specialTerms || '';
-            const purchasePrice = contractData.purchasePrice ?
-                new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(contractData.purchasePrice) :
-                'the agreed-upon price';
-
-            // Populate the "Extracted Information" card
-            displayPropertyAddressEl.textContent = finalPropertyAddress;
-            displaySpecialTermsEl.textContent = specialTermsText || 'Standard contract terms apply.';
-
-            keyDatesTableBodyEl.innerHTML = ''; // Clear previous results
-            if (keyDates.length) {
-                keyDates.forEach(kd => {
-                    const row = keyDatesTableBodyEl.insertRow();
-                    row.insertCell().textContent = kd.name;
-                    try {
-                        const dateCell = row.insertCell();
-                        // Format date nicely for the table
-                        dateCell.textContent = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
-                            year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-                        });
-                    } catch {
-                        row.insertCell().textContent = kd.date || 'Invalid Date'; // Fallback
-                    }
-                });
-            } else {
-                const row = keyDatesTableBodyEl.insertRow();
-                const cell = row.insertCell();
-                cell.colSpan = 2;
-                cell.textContent = 'No key dates were extracted from the contract.';
-            }
-
-            // --- GENERATE THE HTML EMAIL ---
-            let keyDatesHtml = keyDates.map(kd => {
-                const formattedDate = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
-                    year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-                });
-                return `<li><strong>${kd.name}:</strong> ${formattedDate}</li>`;
-            }).join('');
-
-            const emailSubject = `🎉 WE DID IT! ${finalPropertyAddress} is Under Contract!`;
-            const emailBody = `
-                <p>Hi ${clientInfo.clientNames},</p>
-                <p>Congratulations!  We are officially under contract on ${finalPropertyAddress}!</p>
-                <p>Here’s a quick rundown of the key dates and terms in the contract:</p>
-               <p>Purchase price is <strong>${purchasePrice}</strong>,</p>
-                <ul>${keyDatesHtml}</ul>
-                ${specialTermsText ? `<p><strong>Additional Terms:</strong> This contract includes a contingency that it's ${specialTermsText.toLowerCase()}</p>` : ''}
-                <p><strong>Next Steps:</strong> I'll be monitoring all these deadlines closely and will keep you informed every step of the way. You can also add these deadlines to your calendar using the links I've included here.</p>
-                <p>This is an exciting milestone! Please don't hesitate to reach out if you have any questions – I'm here to support you throughout this process.</p>
-               
-                <br>
-                <p><em><small>This was prepared with the help of my trusty AI assistant. Make sure to refer to the original document for detailed information.</small></em></p>
-            `;
-
-            // Display the email in the preview box
-            emailPreviewEl.innerHTML = `<strong>Subject: ${emailSubject}</strong><hr class="my-2">${emailBody}`;
+        console.log("🔍 Parsing JSON response...");
+        let contractData = {};
+        try {
+            contractData = JSON.parse(cleanedJsonText);
+            console.log("✅ JSON parsed successfully");
+        } catch (e) {
+            console.log("❌ JSON parsing failed");
+            showStatus("❌ Failed to parse AI response as JSON. Please check the output or try again.", "error");
+            console.error("Failed to parse JSON:", cleanedJsonText, e);
             
-            // --- GENERATE CALENDAR LINKS ---
-            const allCalendarLinks = calendarUtils.generateAllCalendarLinks(keyDates, finalPropertyAddress);
-            populateCalendarLinks(allCalendarLinks);
-            resultsAreaEl.classList.remove('hidden');
-            showStatus("✅ Analysis complete!", "success", 4000);
-
-        } catch (error) {
-            console.error("❌ A critical error occurred:", error);
-            // Create a more user-friendly error message
-            let displayError = "An unknown error occurred. Please check the console for details.";
-            if (error.message.includes("Make.com webhook failed")) {
-                // Extract the detailed message from the webhook failure
-                const details = error.message.split('—')[1] || 'No further details available.';
-                displayError = `The API call failed. The server responded with: ${details.trim()}`;
-            } else {
-                // For other errors (e.g., file validation, or our custom Make.com error)
-                displayError = error.message;
+            // CRITICAL: Hide loader on JSON parse failure
+            if (loaderShown) {
+                console.log("🔄 Hiding loader due to JSON parse error");
+                showLoader(false);
+                loaderShown = false;
             }
-            showStatus(displayError, "error", 15000); // Show for longer
-        } finally {
-            showLoader(false);
+            return; // Exit early
         }
-    });
 
+        // Rest of your data processing...
+        console.log("🔄 Processing contract data...");
+        
+        const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "The Property";
+        const keyDates = Array.isArray(contractData.keyDates) ? contractData.keyDates : [];
+        const specialTermsText = contractData.specialTerms || '';
+        const purchasePrice = contractData.purchasePrice ?
+            new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(contractData.purchasePrice) :
+            'the agreed-upon price';
+
+        // Your existing DOM population code...
+        console.log("🔄 Populating results...");
+        
+        displayPropertyAddressEl.textContent = finalPropertyAddress;
+        displaySpecialTermsEl.textContent = specialTermsText || 'Standard contract terms apply.';
+
+        keyDatesTableBodyEl.innerHTML = '';
+        if (keyDates.length) {
+            keyDates.forEach(kd => {
+                const row = keyDatesTableBodyEl.insertRow();
+                row.insertCell().textContent = kd.name;
+                try {
+                    const dateCell = row.insertCell();
+                    dateCell.textContent = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+                    });
+                } catch {
+                    row.insertCell().textContent = kd.date || 'Invalid Date';
+                }
+            });
+        } else {
+            const row = keyDatesTableBodyEl.insertRow();
+            const cell = row.insertCell();
+            cell.colSpan = 2;
+            cell.textContent = 'No key dates were extracted from the contract.';
+        }
+
+        // Generate email and calendar links...
+        let keyDatesHtml = keyDates.map(kd => {
+            const formattedDate = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
+                year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+            });
+            return `<li><strong>${kd.name}:</strong> ${formattedDate}</li>`;
+        }).join('');
+
+        const emailSubject = `🎉 WE DID IT! ${finalPropertyAddress} is Under Contract!`;
+        const emailBody = `
+            <p>Hi ${clientInfo.clientNames},</p>
+            <p>Congratulations! We are officially under contract on ${finalPropertyAddress}!</p>
+            <p>Here's a quick rundown of the key dates and terms in the contract:</p>
+            <p>Purchase price is <strong>${purchasePrice}</strong>,</p>
+            <ul>${keyDatesHtml}</ul>
+            ${specialTermsText ? `<p><strong>Additional Terms:</strong> This contract includes a contingency that it's ${specialTermsText.toLowerCase()}</p>` : ''}
+            <p><strong>Next Steps:</strong> I'll be monitoring all these deadlines closely and will keep you informed every step of the way. You can also add these deadlines to your calendar using the links I've included here.</p>
+            <p>This is an exciting milestone! Please don't hesitate to reach out if you have any questions – I'm here to support you throughout this process.</p>
+            <br>
+            <p><em><small>This was prepared with the help of my trusty AI assistant. Make sure to refer to the original document for detailed information.</small></em></p>
+        `;
+
+        emailPreviewEl.innerHTML = `<strong>Subject: ${emailSubject}</strong><hr class="my-2">${emailBody}`;
+        
+        const allCalendarLinks = calendarUtils.generateAllCalendarLinks(keyDates, finalPropertyAddress);
+        populateCalendarLinks(allCalendarLinks);
+        resultsAreaEl.classList.remove('hidden');
+        
+        console.log("✅ All processing complete!");
+        showStatus("✅ Analysis complete!", "success", 4000);
+
+    } catch (error) {
+        console.error("❌ Critical error in main try block:", error);
+        
+        let displayError = "An unknown error occurred. Please check the console for details.";
+        if (error.message.includes("Make.com webhook failed")) {
+            const details = error.message.split('—')[1] || 'No further details available.';
+            displayError = `The API call failed. The server responded with: ${details.trim()}`;
+        } else {
+            displayError = error.message;
+        }
+        showStatus(displayError, "error", 15000);
+        
+    } finally {
+        // CRITICAL: Always hide loader with extra safety
+        console.log("🔄 Finally block - hiding loader");
+        if (loaderShown) {
+            showLoader(false);
+            console.log("✅ Loader hidden in finally block");
+        } else {
+            console.log("⚠️ Loader was not shown, or already hidden");
+        }
+    }
+});
+
+// Also add this helper function to double-check loader state:
+function forceHideLoader() {
+    console.log("🚨 Force hiding loader");
+    showLoader(false);
+    loaderEl.classList.add('hidden');
+    analyzeButton.disabled = false;
+}
   // --- Event Listener for the NEW Rich Text Copy Button ---
 copyEmailButton.addEventListener('click', () => {
     // Get the HTML content from the preview box.
