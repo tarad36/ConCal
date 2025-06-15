@@ -596,6 +596,7 @@ try {
 } catch (e) {
     showStatus("❌ Failed to parse AI response as JSON. Please check the output or try again.", "error");
     console.error("Failed to parse JSON:", cleanedJsonText, e);
+    showLoader(false); // ← ADD THIS LINE!
     return;
 }
 
