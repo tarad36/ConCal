@@ -120,6 +120,11 @@
             }
         }
     </script>
+   <style>
+  /* Fallback: works even if Tailwind CDN script fails */
+  .hidden { display: none !important; }
+</style>
+ 
 </head>
 <body class="bg-gray-100">
 
@@ -409,12 +414,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function showLoader(show) {
-        loaderEl.classList.toggle('hidden', !show);
-        analyzeButton.disabled = show;
-        if (show) {
-            resultsAreaEl.classList.add('hidden');
-        }
+   function showLoader(show) {
+  loaderEl.style.display = show ? 'flex' : 'none';   // inline = highest priority
+  loaderEl.classList.toggle('hidden', !show);        // keeps Tailwind in sync
+  analyzeButton.disabled = show;
+  resultsAreaEl.classList.toggle('hidden', show);
+}
+
     }
 
     function fileToBase64(file) {
