@@ -536,20 +536,20 @@ function extractEffectiveDate(text) {
             const base64File = await fileToBase64(file);
             
            
-const prompt = '
+const prompt = `
 TASK:
 You are an AI contract parser.
-Return JSON – an array of objects. Each object has:
-  - type  (inspection | deposit | closing | financing)
-  - amount (number, deposit only)
-  - absoluteDate ("MM/DD/YYYY") if a literal date is stated
-  - offsetDays (number) if expressed as "within N days"
-  - anchorEvent (Effective Date, Acceptance, etc.)
+Return JSON (array of objects). Each object has:
+- type (inspection | deposit | closing | financing)
+- amount (number)                # deposit only
+- absoluteDate (MM/DD/YYYY)      # literal date
+- offsetDays (number)            # "within N days"
+- anchorEvent (Effective Date, Acceptance, etc.)
 
 Rules:
-  - If both literal and relative dates appear, keep the literal.
-  - If only relative, fill offsetDays and anchorEvent, leave absoluteDate null.
-Return ONLY valid JSON with no extra text.
+- If both literal and relative dates exist, keep literal.
+- If only relative, fill offsetDays and anchorEvent; leave absoluteDate null.
+Return ONLY valid JSON, no extra text.
 `;
 
 
@@ -564,7 +564,7 @@ Return ONLY valid JSON with no extra text.
             
            contractForm.addEventListener('submit', async (event) => {
   event.preventDefault();
-  …
+               
   /* ── Gemini API call finishes ── */
   const aiText = aiResponseText;     // already cleaned of code-fences
   const rawText = extractedPdfText;  // whatever var holds the full PDF text
