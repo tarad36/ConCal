@@ -539,21 +539,50 @@ function extractEffectiveDate(text) {
             const base64File = await fileToBase64(file);
             
            
+
 const prompt = `
 TASK:
-You are an AI contract parser.
-Return JSON (array of objects). Each object has:
+You are an AI contract parser for real estate agreements.
+
+Return valid JSON as an object containing two properties:
+
+---
+
+1. "dates" — an array of objects, each with:
 - type (inspection | deposit | closing | financing)
-- amount (number)                # deposit only
-- absoluteDate (MM/DD/YYYY)      # literal date
-- offsetDays (number)            # "within N days"
+- amount (number)                // deposit only
+- absoluteDate (MM/DD/YYYY)     // literal date
+- offsetDays (number)           // "within N days"
 - anchorEvent (Effective Date, Acceptance, etc.)
 
 Rules:
-- If both literal and relative dates exist, keep literal.
+- If both literal and relative dates exist for an item, prefer the literal.
 - If only relative, fill offsetDays and anchorEvent; leave absoluteDate null.
-Return ONLY valid JSON, no extra text.
+
+---
+
+2. "signatures" — an object with:
+- buyerSignatureDate: "MM/DD/YYYY" or null
+- sellerSignatureDate: "MM/DD/YYYY" or null
+
+Only extract dates that are clearly associated with the Buyer or Seller signing the contract.
+Do not return today's date or make assumptions.
+If one party has not signed, return null for that party.
+
+---
+
+Output format:
+{
+  "dates": [...],
+  "signatures": {
+    "buyerSignatureDate": "06/13/2025",
+    "sellerSignatureDate": "06/16/2025"
+  }
+}
+
+Only return valid JSON. Do not include explanation, markdown, or formatting.
 `;
+
 
 
 
@@ -563,7 +592,14 @@ Return ONLY valid JSON, no extra text.
             // 3. Parse AI Response
             showStatus("AI response received. Parsing results...", "info");
             const match = aiResponseText.match(/```json\s*([\s\S]*?)```/i);
-            const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
+           const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
+const parsed = JSON.parse(cleanedJsonText);
+
+// Pull both parts
+const items = parsed.dates || [];
+const signatureDates = parsed.signatures || {};
+const effDate = calculateEffectiveDate(signatureDates);
+
              
           
 // ---------- helper: convert items[] to the object the old UI expects ------
