@@ -588,8 +588,9 @@ function buildLegacyObject(items) {
         date: it.absoluteDate ||
               `${it.offsetDays} days after ${it.anchorEvent}`
       });
+    }
   });
-}
+
 
   return out;
 }
