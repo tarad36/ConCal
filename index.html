@@ -705,11 +705,12 @@ displayResults(contractData);
             
             showStatus("✅ Analysis complete!", "success", 4000);
 
-        } catch (error) {
-          console.error('❌ A critical error occurred during the process:', error);
+       } catch (error) {
+  console.error("❌ A critical error occurred during the process:", error);
 
+  showStatus("Error: " + error.message, "error", 15000);
+}
 
-            showStatus(`Error: ${error.message}`, "error", 15000);
         
         } finally {
             console.log("✅ Process finished. Hiding loader.");
