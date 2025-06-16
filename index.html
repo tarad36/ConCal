@@ -619,10 +619,6 @@ function calculateEffectiveDate(data) {
 }
 
 // ------------------------------------------------------------------------
-// Pull both parts
-const items = parsed.dates || [];
-const signatureDates = parsed.signatures || {};
-const effectiveDate = calculateEffectiveDate(signatureDates);
 
 // Pull both parts
 const items = parsed.dates || [];
