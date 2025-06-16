@@ -565,42 +565,7 @@ Return ONLY valid JSON, no extra text.
             const match = aiResponseText.match(/```json\s*([\s\S]*?)```/i);
             const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
             
-           contractForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-               
-  /* ── Gemini API call finishes ── */
-  const aiText = aiResponseText;     // already cleaned of code-fences
-  const rawText = extractedPdfText;  // whatever var holds the full PDF text
-
-  /* 🔽 Replace the old try { JSON.parse … } block with everything below 🔽 */
-
-  let items = JSON.parse(aiText);        // 1️⃣ data directly from Gemini
-
-  // 2️⃣ Fallback – regex pass for NH PSA
-  if (!items.some(i => i.type === "inspection")) {
-    const m = rawText.match(inspChecklistRegex);
-    if (m) {
-      items.push({
-        type: "inspection",
-        amount: null,
-        offsetDays: Number(m[2]),
-        anchorEvent: "Effective Date",
-        absoluteDate: null
-      });
-    }
-  }
-
-  if (!items.some(i => i.type === "deposit")) {
-    for (const dep of rawText.matchAll(depositRegex)) {
-      const [, amt, offset, literal] = dep;
-      items.push({
-        type: "deposit",
-        amount: Number(amt.replace(/[,]/g, "")),
-        offsetDays: offset ? Number(offset) : null,
-        anchorEvent: offset ? "Acceptance" : null,
-        absoluteDate: literal || null
-      });
-    }
+          
 // ---------- helper: convert items[] to the object the old UI expects ------
 function buildLegacyObject(items) {
   const out = {
