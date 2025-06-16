@@ -628,7 +628,7 @@ function buildLegacyObject(items) {
 
   return out;
 }
-
+     try {
   // 3️⃣ Convert relative → absolute
   const effDate = extractEffectiveDate(rawText);
 items = items.map(i => {
