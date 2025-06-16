@@ -385,6 +385,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailPreviewEl = document.getElementById('emailPreview');
     const copyEmailButton = document.getElementById('copyEmailButton');
     const calendarLinksEl = document.getElementById('calendarLinks');
+    
+// ─── Global holder for parsed contract info ─────────────────────────
+let contractData = null;
 
     // ---------- Helper regex & date-math for NH PSA ----------
 const inspChecklistRegex =
@@ -611,7 +614,10 @@ Return ONLY valid JSON, no extra text.
         const contractData = items;
 
   // 4️⃣ Display
-  displayResults(items);
+// assign to outer-scope variable so other functions can read it
+contractData = items;
+displayResults(contractData);
+
 });
 
 
