@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+F<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -122,6 +122,8 @@
     </script>
  
  <link rel="stylesheet" href="/styles.css">
+     <!-- date-fns for simple date math -->
+  <script src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0/+esm"></script>
 </head>
 <body class="bg-gray-100">
 
@@ -401,6 +403,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyEmailButton = document.getElementById('copyEmailButton');
     const calendarLinksEl = document.getElementById('calendarLinks');
 
+    // ---------- Helper regex & date-math for NH PSA ----------
+const inspChecklistRegex =
+  /(General|Radon|Lead|Pest)[^\n]{0,80}?within\s+(\d+)\s+days/i;
+
+const depositRegex =
+  /deposit[^\$\n]*\$([\d,]+)\s*(?:within\s*(\d+)\s*days|on or before\s*([A-Za-z0-9\/]+))/ig;
+
+function resolveRelative(offset, anchorStr) {
+  try {
+    const anchor = new Date(anchorStr);
+    if (isNaN(anchor)) return null;
+    const result = new Date(anchor);
+    result.setDate(result.getDate() + Number(offset));
+    return result.toLocaleDateString('en-US');
+  } catch {
+    return null;
+  }
+}
+
+function extractEffectiveDate(text) {
+  const m = text.match(/Effective Date[:\s]+([0-9\/]+)/i);
+  return m ? m[1] : null;
+}
+
     // --- UI Helper Functions ---
     function showStatus(message, type = 'info', duration = 0) {
         statusMessageEl.textContent = message;
@@ -526,7 +552,21 @@ document.addEventListener('DOMContentLoaded', () => {
             showStatus("Converting file for analysis...", "info");
             const base64File = await fileToBase64(file);
             
-            const prompt = `Please analyze the provided real estate contract PDF. Extract the following information in a structured JSON format: propertyAddress (string), purchasePrice (number, just digits), keyDates (an array of objects, each with a 'name' and 'date' in 'YYYY-MM-DD' format), and specialTerms (a brief string summary of any important contingencies or non-standard terms).`;
+           const prompt = `
+🔍 **TASK**
+You are an AI contract parser.
+Return JSON – an array of objects – where each object has:
+  • type  ("inspection" | "deposit" | "closing" | "financing")
+  • amount (number)          – deposit amount if applicable
+  • absoluteDate ("MM/DD/YYYY") – if a literal date is stated
+  • offsetDays (number)      – if expressed as "within N days"
+  • anchorEvent (string)     – e.g. "Effective Date", "Acceptance"
+
+Rules:
+  • If both literal and relative forms appear, keep literal.
+  • If only relative, fill offsetDays + anchorEvent and leave absoluteDate null.
+Return ONLY valid JSON (no markdown, no commentary).`;
+
 
             showStatus("Sending to your AI Assistant... (This may take a moment)", "info");
             const aiResponseText = await callGeminiAPI(prompt, base64File);
@@ -536,13 +576,57 @@ document.addEventListener('DOMContentLoaded', () => {
             const match = aiResponseText.match(/```json\s*([\s\S]*?)```/i);
             const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
             
-            let contractData;
-            try {
-                contractData = JSON.parse(cleanedJsonText);
-            } catch (e) {
-                console.error("Failed to parse JSON:", cleanedJsonText, e);
-                throw new Error("The AI response was not in a valid format. Please try again.");
-            }
+           contractForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  …
+  /* ── Gemini API call finishes ── */
+  const aiText = aiResponseText;     // already cleaned of code-fences
+  const rawText = extractedPdfText;  // whatever var holds the full PDF text
+
+  /* 🔽 Replace the old try { JSON.parse … } block with everything below 🔽 */
+
+  let items = JSON.parse(aiText);        // 1️⃣ data directly from Gemini
+
+  // 2️⃣ Fallback – regex pass for NH PSA
+  if (!items.some(i => i.type === "inspection")) {
+    const m = rawText.match(inspChecklistRegex);
+    if (m) {
+      items.push({
+        type: "inspection",
+        amount: null,
+        offsetDays: Number(m[2]),
+        anchorEvent: "Effective Date",
+        absoluteDate: null
+      });
+    }
+  }
+
+  if (!items.some(i => i.type === "deposit")) {
+    for (const dep of rawText.matchAll(depositRegex)) {
+      const [, amt, offset, literal] = dep;
+      items.push({
+        type: "deposit",
+        amount: Number(amt.replace(/[,]/g, "")),
+        offsetDays: offset ? Number(offset) : null,
+        anchorEvent: offset ? "Acceptance" : null,
+        absoluteDate: literal || null
+      });
+    }
+  }
+
+  // 3️⃣ Convert relative → absolute
+  const effDate = extractEffectiveDate(rawText);
+  items = items.map(i => {
+    if (i.offsetDays && effDate) {
+      i.absoluteDate = resolveRelative(i.offsetDays, effDate);
+    }
+    return i;
+  });
+
+  // 4️⃣ Display
+  displayResults(items);
+});
+
 
             // 4. Populate the UI with Results
             console.log("Populating results...");
