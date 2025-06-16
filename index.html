@@ -682,7 +682,8 @@ displayResults(contractData);
     });
 
     // --- Rich Text Copy Button Event Listener (Unchanged) ---
-   copyEmailButton.addEventListener('click', () => {
+  copyEmailButton.addEventListener('click', (event) => {
+    event.preventDefault(); // ← THIS stops the form from clearing
     const htmlToCopy = emailPreviewEl.innerHTML;
     navigator.clipboard.write([
         new ClipboardItem({
@@ -695,7 +696,7 @@ displayResults(contractData);
         console.error('Failed to copy HTML: ', err);
         showStatus("❌ Oops! Could not copy email.", "error", 4000);
     });
-}); // ← this one was missing!
+});
 
        
     // Initialize Feather Icons
