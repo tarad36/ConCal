@@ -682,19 +682,21 @@ displayResults(contractData);
     });
 
     // --- Rich Text Copy Button Event Listener (Unchanged) ---
-    copyEmailButton.addEventListener('click', () => {
-        const htmlToCopy = emailPreviewEl.innerHTML;
-        navigator.clipboard.write([
-            new ClipboardItem({
-                "text/html": new Blob([htmlToCopy], { type: "text/html" }),
-                "text/plain": new Blob([emailPreviewEl.innerText], { type: "text/plain" })
-            })
-        ]).then(() => {
-            showStatus("✅ Formatted email copied to clipboard!", "success", 3000);
-        }).catch(err => {
-            console.error('Failed to copy HTML: ', err);
-            showStatus("❌ Oops! Could not copy email.", "error", 4000);
-        });
+   copyEmailButton.addEventListener('click', () => {
+    const htmlToCopy = emailPreviewEl.innerHTML;
+    navigator.clipboard.write([
+        new ClipboardItem({
+            "text/html": new Blob([htmlToCopy], { type: "text/html" }),
+            "text/plain": new Blob([emailPreviewEl.innerText], { type: "text/plain" })
+        })
+    ]).then(() => {
+        showStatus("✅ Formatted email copied to clipboard!", "success", 3000);
+    }).catch(err => {
+        console.error('Failed to copy HTML: ', err);
+        showStatus("❌ Oops! Could not copy email.", "error", 4000);
+    });
+}); // ← this one was missing!
+
        
     // Initialize Feather Icons
     feather.replace();
