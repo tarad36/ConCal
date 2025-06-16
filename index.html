@@ -631,18 +631,16 @@ function buildLegacyObject(items) {
 
   // 3️⃣ Convert relative → absolute
   const effDate = extractEffectiveDate(rawText);
-  items = items.map(i => {
-    if (i.offsetDays && effDate) {
-      i.absoluteDate = resolveRelative(i.offsetDays, effDate);
-    }
-    return i;
-  });
-     
-  // 4️⃣ Display
-// assign to outer-scope variable so other functions can read it
-contractData = buildLegacyObject(items);   // <-- transform array ➜ object
-displayResults(contractData);
+items = items.map(i => {
+  if (i.offsetDays && effDate) {
+    i.absoluteDate = resolveRelative(i.offsetDays, effDate);
+  }
+  return i;
+});
 
+// build the legacy object so the existing UI keeps working
+contractData = buildLegacyObject(items);   // transform array ➜ object
+displayResults(contractData);
 
 });
 
