@@ -657,12 +657,15 @@ function buildLegacyObject(items) {
 }
 
   // 3️⃣ Convert relative → absolute
-items = items.map(i => {
-  if (i.offsetDays && effDate) {
-    i.absoluteDate = resolveRelative(i.offsetDays, effDate);
+const items = parsed.dates || [];
+
+const processedItems = items.map(i => {
+  if (i.offsetDays && effectiveDate) {
+    i.absoluteDate = resolveRelative(i.offsetDays, effectiveDate);
   }
   return i;
 });
+
 
 // build the legacy object so the existing UI keeps working
 contractData = buildLegacyObject(items);   // transform array ➜ object
