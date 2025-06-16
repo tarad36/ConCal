@@ -601,7 +601,33 @@ Return ONLY valid JSON, no extra text.
         absoluteDate: literal || null
       });
     }
-  }
+// ---------- helper: convert items[] to the object the old UI expects ------
+function buildLegacyObject(items) {
+  const out = {
+    propertyAddress: '',      // we don't parse this yet
+    purchasePrice: null,      // add later if desired
+    specialTerms: '',
+    keyDates: [],
+  };
+
+  items.forEach(it => {
+    if (it.type === 'closing' && it.absoluteDate) {
+      out.keyDates.push({ name: 'Closing', date: it.absoluteDate });
+    }
+    if (it.type === 'inspection' && it.absoluteDate) {
+      out.keyDates.push({ name: 'Inspection', date: it.absoluteDate });
+    }
+    if (it.type === 'deposit') {
+      out.keyDates.push({
+        name: `Deposit $${it.amount.toLocaleString()}`,
+        date: it.absoluteDate ||
+              `${it.offsetDays} days after ${it.anchorEvent}`
+      });
+    }
+  });
+
+  return out;
+}
 
   // 3️⃣ Convert relative → absolute
   const effDate = extractEffectiveDate(rawText);
@@ -615,8 +641,9 @@ Return ONLY valid JSON, no extra text.
 
   // 4️⃣ Display
 // assign to outer-scope variable so other functions can read it
-contractData = items;
+contractData = buildLegacyObject(items);   // <-- transform array ➜ object
 displayResults(contractData);
+
 
 });
 
