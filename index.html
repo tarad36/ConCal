@@ -535,20 +535,23 @@ function extractEffectiveDate(text) {
             showStatus("Converting file for analysis...", "info");
             const base64File = await fileToBase64(file);
             
-           const prompt = `
-🔍 **TASK**
+           
+const prompt = `
+TASK:
 You are an AI contract parser.
-Return JSON – an array of objects – where each object has:
-  • type  ("inspection" | "deposit" | "closing" | "financing")
-  • amount (number)          – deposit amount if applicable
-  • absoluteDate ("MM/DD/YYYY") – if a literal date is stated
-  • offsetDays (number)      – if expressed as "within N days"
-  • anchorEvent (string)     – e.g. "Effective Date", "Acceptance"
+Return JSON – an array of objects. Each object has:
+  - type  (inspection | deposit | closing | financing)
+  - amount (number, deposit only)
+  - absoluteDate ("MM/DD/YYYY") if a literal date is stated
+  - offsetDays (number) if expressed as "within N days"
+  - anchorEvent (Effective Date, Acceptance, etc.)
 
 Rules:
-  • If both literal and relative forms appear, keep literal.
-  • If only relative, fill offsetDays + anchorEvent and leave absoluteDate null.
-Return ONLY valid JSON (no markdown, no commentary).`;
+  - If both literal and relative dates appear, keep the literal.
+  - If only relative, fill offsetDays and anchorEvent, leave absoluteDate null.
+Return ONLY valid JSON with no extra text.
+`;
+
 
 
             showStatus("Sending to your AI Assistant... (This may take a moment)", "info");
