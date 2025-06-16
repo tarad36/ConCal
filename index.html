@@ -679,7 +679,8 @@ Return ONLY valid JSON, no extra text.
             showStatus("✅ Analysis complete!", "success", 4000);
 
         } catch (error) {
-           console.error("❌ A critical error occurred during the process:", error);
+          console.error('❌ A critical error occurred during the process:', error);
+
 
             showStatus(`Error: ${error.message}`, "error", 15000);
         
