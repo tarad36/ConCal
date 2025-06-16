@@ -598,7 +598,7 @@ const parsed = JSON.parse(cleanedJsonText);
 // Pull both parts
 const items = parsed.dates || [];
 const signatureDates = parsed.signatures || {};
-const effDate = calculateEffectiveDate(signatureDates);
+const effectiveDate = calculateEffectiveDate(signatureDates);
 
              
           
@@ -632,7 +632,6 @@ function buildLegacyObject(items) {
 }
 
   // 3️⃣ Convert relative → absolute
-  const effDate = extractEffectiveDate(rawText);
 items = items.map(i => {
   if (i.offsetDays && effDate) {
     i.absoluteDate = resolveRelative(i.offsetDays, effDate);
