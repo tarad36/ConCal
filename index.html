@@ -621,7 +621,7 @@ function calculateEffectiveDate(data) {
 // ------------------------------------------------------------------------
 
 // Pull both parts
-const items = parsed.dates || [];
+let items = parsed.dates || [];
 const signatureDates = parsed.signatures || {};
 const effectiveDate = calculateEffectiveDate(signatureDates);
 
@@ -657,9 +657,7 @@ function buildLegacyObject(items) {
 }
 
   // 3️⃣ Convert relative → absolute
-const items = parsed.dates || [];
-
-const processedItems = items.map(i => {
+items = items.map(i => {
   if (i.offsetDays && effectiveDate) {
     i.absoluteDate = resolveRelative(i.offsetDays, effectiveDate);
   }
