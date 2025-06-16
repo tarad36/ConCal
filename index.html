@@ -3,769 +3,525 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contract Analyzer & Timeline Generator - Real Estate Professional Tool</title>
-    
-   
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script src="https://unpkg.com/feather-icons"></script>
-    
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6; /* Tailwind gray-100 */
-        }
-        .card {
-            background-color: white;
-            border-radius: 0.5rem; /* Tailwind rounded-lg */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Tailwind shadow-lg */
-            padding: 1.5rem; /* Tailwind p-6 */
-            margin-bottom: 1.5rem; /* Tailwind mb-6 */
-        }
-        .label {
-            display: block;
-            margin-bottom: 0.5rem; /* Tailwind mb-2 */
-            font-weight: 500; /* Tailwind font-medium */
-            color: #374151; /* Tailwind text-gray-700 */
-        }
-        .input, .textarea, .select {
-            width: 100%;
-            padding: 0.75rem; /* Tailwind p-3 */
-            border: 1px solid #D1D5DB; /* Tailwind border-gray-300 */
-            border-radius: 0.375rem; /* Tailwind rounded-md */
-            box-shadow: inset 0 1px 2px 0 rgba(0,0,0,0.05); /* Tailwind shadow-sm */
-        }
-        .input:focus, .textarea:focus, .select:focus {
-            outline: 2px solid transparent;
-            outline-offset: 2px;
-            border-color: #3b82f6; /* Tailwind focus:border-brand-500 */
-            box-shadow: 0 0 0 2px #3b82f6; /* Tailwind focus:ring-brand-500 */
-        }
-        .button {
-            padding: 0.75rem 1.5rem; /* Tailwind py-3 px-6 */
-            border-radius: 0.375rem; /* Tailwind rounded-md */
-            font-weight: 600; /* Tailwind font-semibold */
-            color: white;
-            background-color: #3b82f6; /* Tailwind bg-brand-500 */
-            transition: background-color 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem; /* Tailwind space-x-2 */
-            cursor: pointer;
-        }
-        .button:hover {
-            background-color: #2563eb; /* Tailwind hover:bg-brand-600 */
-        }
-        .button:disabled {
-            background-color: #9ca3af; /* Tailwind bg-gray-400 */
-            cursor: not-allowed;
-        }
-        .button-secondary {
-            background-color: #6b7280; /* Tailwind bg-gray-500 */
-        }
-        .button-secondary:hover {
-            background-color: #4b5563; /* Tailwind hover:bg-gray-600 */
-        }
-        .results-section h3 {
-            font-size: 1.25rem; /* Tailwind text-xl */
-            font-weight: 600; /* Tailwind font-semibold */
-            margin-bottom: 1rem; /* Tailwind mb-4 */
-            color: #1d4ed8; /* Tailwind text-brand-700 */
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .feather {
-            width: 1em;
-            height: 1em;
-            vertical-align: middle;
-            stroke-width: 2;
-        }
-        #extractedDataTable th, #extractedDataTable td {
-            border: 1px solid #e5e7eb; /* Tailwind border-gray-200 */
-            padding: 0.75rem; /* Tailwind p-3 */
-            text-align: left;
-        }
-        #extractedDataTable th {
-            background-color: #f9fafb; /* Tailwind bg-gray-50 */
-        }
-    </style>
-    
-    
- <link rel="stylesheet" href="/styles.css">
-
+    <title>Real Estate Contract Analyzer</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-gray-100">
-
-    <nav class="bg-brand-600 text-white p-4 shadow-md">
-        <div class="container mx-auto">
-            <h1 class="text-2xl font-bold">Contract Timeline App</h1>
-        </div>
-    </nav>
-
-    <!-- Main Content Container -->
-    <div class="container mx-auto p-4">
-        <form id="contractForm" class="grid md:grid-cols-2 gap-6">
-            <!-- Card 1: Contract Details -->
-            <div class="card">
-                <h2 class="text-xl font-semibold mb-4 text-brand-700 flex items-center">
-                    <i data-feather="file-text" class="mr-2"></i>Contract Details
-                </h2>
-                
-                <div>
-                    <label for="contractFile" class="label">1. Upload Contract PDF:</label>
-                    <input type="file" id="contractFile" class="input" accept=".pdf" required>
-                    <p class="text-xs text-gray-500 mt-1">Max file size: 10MB. Only PDF files are accepted.</p>
-                </div>
-
-                <div class="mt-4">
-                    <label for="clientNames" class="label">2. Client FIRST Name(s):</label>
-                    <input type="text" id="clientNames" class="input" placeholder="e.g., John Doe & Jane Smith" required>
-                </div>
-                
-               
-                <div class="mt-4">
-                    <label for="propertyAddressOptional" class="label">4. Property Address (Optional - if not clear in PDF):</label>
-                    <input type="text" id="propertyAddressOptional" class="input" placeholder="e.g., 123 Main St, Anytown, USA">
-                </div>
-                
-                <div class="mt-6">
-                    <button type="submit" id="analyzeButton" class="button w-full md:w-auto">
-                        <i data-feather="zap" class="feather"></i> Analyze Contract
-                    </button>
-                </div>
+<body>
+    <div class="container">
+        <h1>Real Estate Contract Analyzer</h1>
+        
+        <form id="contractForm">
+            <div class="form-group">
+                <label for="contractFile">Upload Contract (PDF):</label>
+                <input type="file" id="contractFile" accept="application/pdf" required>
             </div>
-
-            <!-- Card 2: How it Works -->
-            <div class="card bg-brand-50">
-                 <h2 class="text-xl font-semibold mb-4 text-brand-700 flex items-center">
-                    <i data-feather="info" class="mr-2"></i>How it Works
-                </h2>
-                <p class="text-gray-700 mb-2">1.  <strong class="text-brand-600">Upload PDF:</strong> Select the real estate contract (PDF format).</p>
-                <p class="text-gray-700 mb-2">2.  <strong class="text-brand-600">Enter Info:</strong> Provide client.</p>
-                <p class="text-gray-700 mb-2">3.  <strong class="text-brand-600">Analyze:</strong> Click "Analyze Contract". The AI will extract key dates and information.</p>
-                <p class="text-gray-700">4.  <strong class="text-brand-600">Get Results:</strong> Review the generated client email and calendar event links.</p>
-                <p class="text-sm text-gray-500 mt-4">This tool uses AI to process your contract. Ensure your PDF is clear and legible for best results. No contract content is stored by this application after processing.</p>
+            
+            <h3>Client Information</h3>
+            
+            <div class="form-group">
+                <label for="clientNames">Client Name(s):</label>
+                <input type="text" id="clientNames" placeholder="John and Jane Doe" required>
             </div>
+            
+            <div class="form-group">
+                <label for="clientEmails">Client Email(s):</label>
+                <input type="text" id="clientEmails" placeholder="john@email.com, jane@email.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="propertyAddressOptional">Property Address (if known):</label>
+                <input type="text" id="propertyAddressOptional" placeholder="123 Main St, City, ST 12345">
+            </div>
+            
+            <button type="submit" id="submitBtn">Analyze Contract</button>
         </form>
-
-       <!-- Status Section -->
-<div id="statusSection" class="my-4 text-center">
-  <!-- Loader -->
-  <div id="loader"
-       class="loader hidden"
-       style="display:none">
-    <!-- put your spinner SVG or CSS animation here -->
-  </div>
-
-  <p id="statusMessage" class="text-gray-700 font-medium"></p>
-</div>
-
-
-        <!-- Results Area -->
-        <div id="resultsArea" class="hidden">
-            <div class="card results-section" id="extractedInfoSection">
-                <h3 class="flex items-center"><i data-feather="list" class="mr-2"></i>Extracted Information</h3>
-                <div id="extractedContractData" class="prose max-w-none">
-                    <p><strong>Property Address:</strong> <span id="displayPropertyAddress"></span></p>
-                    <p><strong>Special Terms:</strong> <span id="displaySpecialTerms"></span></p>
-                    <h4 class="font-semibold mt-3 mb-2">Key Dates:</h4>
-                    <table id="extractedDataTable" class="w-full text-sm">
-                        <thead>
-                            <tr>
-                                <th>Event</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="keyDatesTableBody"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="card results-section" id="emailSection">
-                <h3 class="flex items-center"><i data-feather="mail" class="mr-2"></i>Generated Client Email</h3>
-                <div id="emailPreview" contenteditable="true" class="prose prose-sm max-w-none bg-white p-4 rounded border border-gray-200 mb-2" style="min-height: 200px;"></div>
-                <button id="copyEmailButton" class="button mt-2">
-                    <i data-feather="copy" class="feather"></i> Copy Email
-                </button>
-            </div>
-
-            <div class="card results-section" id="calendarSection">
-                <h3 class="flex items-center"><i data-feather="calendar" class="mr-2"></i>Calendar Event Links</h3>
-                <div id="calendarLinks" class="space-y-4"></div>
-            </div>
+        
+        <div id="loadingDiv" style="display: none;">
+            <div class="spinner"></div>
+            <p>Analyzing contract... This may take a moment.</p>
+        </div>
+        
+        <div id="errorDiv" style="display: none;" class="error"></div>
+        
+        <div id="resultsDiv" style="display: none;">
+            <h2>Contract Analysis Results</h2>
+            <div id="emailPreview"></div>
+            <button id="sendEmailBtn">Send Email</button>
         </div>
     </div>
 
-    <footer class="text-center py-8 text-gray-600 text-sm">
-        Contract Timeline App - For Real Estate Professionals
-    </footer>
-
-<!--
-    ===================================================================
-    APPLICATION JAVASCRIPT
-    All the logic for the app is contained within this single script tag.
-    ===================================================================
--->
-<script>
-// --- Class: CalendarUtils ---
-// NOTE: This class is unchanged as its logic is sound.
-class CalendarUtils {
-    prepareEventDetails(eventData, propertyAddress) {
-        const formatDateForCalendar = (dateStr) => {
-            try {
-                const date = new Date(dateStr);
-                if (isNaN(date.getTime())) return null;
-                const year = date.getUTCFullYear();
-                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-                const day = String(date.getUTCDate()).padStart(2, '0');
-                return `${year}${month}${day}`;
-            } catch (e) {
-                console.error("Error formatting date:", dateStr, e);
-                return null;
+    <script>
+        // Add DEBUG mode
+        const DEBUG = true; // Set to false in production
+        
+        // Date calculation functions
+        function calculateRelativeDate(baseDate, description) {
+            const base = new Date(baseDate);
+            const lowerDesc = description.toLowerCase();
+            
+            // Extract number and unit from descriptions like "within 10 days of effective date"
+            const patterns = [
+                /within\s+(\d+)\s+(days?|business\s+days?)/i,
+                /(\d+)\s+(days?|business\s+days?)\s+(?:of|from|after)/i,
+                /by\s+(\d+)\s+(days?|business\s+days?)/i,
+                /no\s+later\s+than\s+(\d+)\s+(days?|business\s+days?)/i
+            ];
+            
+            for (const pattern of patterns) {
+                const match = description.match(pattern);
+                if (match) {
+                    const number = parseInt(match[1]);
+                    const isBusinessDays = match[2].includes('business');
+                    
+                    if (isBusinessDays) {
+                        return addBusinessDays(base, number);
+                    } else {
+                        base.setDate(base.getDate() + number);
+                        return base;
+                    }
+                }
             }
-        };
-
-        const startDate = formatDateForCalendar(eventData.date);
-        if (!startDate) return null;
-
-        const dateObj = new Date(eventData.date);
-        dateObj.setUTCDate(dateObj.getUTCDate() + 1);
-        const endDate = formatDateForCalendar(dateObj.toISOString().split('T')[0]);
-
-        return {
-            title: `${eventData.name} - ${propertyAddress}`,
-            startDate: startDate,
-            endDate: endDate,
-            description: `Regarding property: ${propertyAddress}.\nEvent: ${eventData.name}`,
-            location: propertyAddress,
-        };
-    }
-
-    generateGoogleCalendarLink(details) {
-        if (!details || !details.startDate) return '#';
-        const base = 'https://www.google.com/calendar/render?action=TEMPLATE';
-        const params = new URLSearchParams({
-            text: details.title,
-            dates: `${details.startDate}/${details.endDate || details.startDate}`,
-            details: details.description,
-            location: details.location,
-            sf: true,
-            output: 'xml'
-        });
-        return `${base}&${params.toString()}`;
-    }
-
-    generateOutlookCalendarLink(details) {
-        if (!details || !details.startDate) return '#';
-        const base = 'https://outlook.live.com/calendar/0/deeplink/compose';
-        const sYear = parseInt(details.startDate.substring(0, 4));
-        const sMonth = parseInt(details.startDate.substring(4, 6)) - 1;
-        const sDay = parseInt(details.startDate.substring(6, 8));
-        const startDateObj = new Date(Date.UTC(sYear, sMonth, sDay));
-
-        let endDateObj = startDateObj;
-        if (details.endDate) {
-            const eYear = parseInt(details.endDate.substring(0, 4));
-            const eMonth = parseInt(details.endDate.substring(4, 6)) - 1;
-            const eDay = parseInt(details.endDate.substring(6, 8));
-            endDateObj = new Date(Date.UTC(eYear, eMonth, eDay));
+            
+            return null;
         }
 
-        const params = new URLSearchParams({
-            path: '/calendar/action/compose',
-            rru: 'addevent',
-            subject: details.title,
-            startdt: startDateObj.toISOString(),
-            enddt: endDateObj.toISOString(),
-            body: details.description,
-            location: details.location,
-            allday: "true"
-        });
-        return `${base}?${params.toString()}`;
-    }
-
-    generateAppleICalContent(details) {
-        if (!details || !details.startDate) return '';
-        const startDate = details.startDate;
-        const endDate = details.endDate || startDate;
-
-        let iCalEndDate = endDate;
-        if (startDate === endDate) {
-            const dateObjEnd = new Date(startDate.substring(0, 4), parseInt(startDate.substring(4, 6)) - 1, parseInt(startDate.substring(6, 8)));
-            dateObjEnd.setDate(dateObjEnd.getDate() + 1);
-            iCalEndDate = `${dateObjEnd.getUTCFullYear()}${String(dateObjEnd.getUTCMonth() + 1).padStart(2, '0')}${String(dateObjEnd.getUTCDate()).padStart(2, '0')}`;
-        }
-
-        const icalContent = [
-            'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ContractTimelineApp//EN', 'BEGIN:VEVENT',
-            `UID:${new Date().getTime()}@contracttimeline.app`,
-            `DTSTAMP:${new Date().toISOString().replace(/[-:.]/g, '').substring(0,15)}Z`,
-            `DTSTART;VALUE=DATE:${startDate}`, `DTEND;VALUE=DATE:${iCalEndDate}`,
-            `SUMMARY:${details.title}`, `DESCRIPTION:${details.description.replace(/\n/g, '\\n')}`,
-            `LOCATION:${details.location}`, 'END:VEVENT', 'END:VCALENDAR'
-        ].join('\r\n');
-        return `data:text/calendar;charset=utf8,${encodeURIComponent(icalContent)}`;
-    }
-
-    generateYahooCalendarLink(details) {
-        if (!details || !details.startDate) return '#';
-        const st = `${details.startDate}T000000`;
-
-        const params = new URLSearchParams({
-            v: 60, title: details.title, st: st, dur: 'allday',
-            desc: details.description, in_loc: details.location
-        });
-        return `https://calendar.yahoo.com/?${params.toString()}`;
-    }
-
-    generateAllCalendarLinks(keyDates, propertyAddress) {
-        const allLinks = [];
-        if (!keyDates || !Array.isArray(keyDates)) return allLinks;
-
-        for (const eventData of keyDates) {
-            if (!eventData.name || !eventData.date) continue;
-
-            const links = {};
-            try {
-                const eventDetails = this.prepareEventDetails(eventData, propertyAddress);
-                if (!eventDetails) continue;
-
-                links.google = this.generateGoogleCalendarLink(eventDetails);
-                links.outlook = this.generateOutlookCalendarLink(eventDetails);
-                links.apple = this.generateAppleICalContent(eventDetails);
-                links.yahoo = this.generateYahooCalendarLink(eventDetails);
-
-                allLinks.push({ eventName: eventData.name, date: eventData.date, links });
-            } catch (error) {
-                console.error(`Error generating calendar links for ${eventData.name}:`, error);
-                allLinks.push({
-                    eventName: eventData.name, date: eventData.date,
-                    links: { google: '#', outlook: '#', apple: '#', yahoo: '#' },
-                    error: 'Could not generate links for this event.'
-                });
+        function addBusinessDays(startDate, days) {
+            const date = new Date(startDate);
+            let daysAdded = 0;
+            
+            while (daysAdded < days) {
+                date.setDate(date.getDate() + 1);
+                // Skip weekends (0 = Sunday, 6 = Saturday)
+                if (date.getDay() !== 0 && date.getDay() !== 6) {
+                    daysAdded++;
+                }
             }
-        }
-        return allLinks;
-    }
-}
-
-
-// --- Main Application Logic ---
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("✅ DOM fully loaded. App is ready.");
-
-    const calendarUtils = new CalendarUtils();
-
-    // Get all necessary DOM elements
-    const contractForm = document.getElementById('contractForm');
-    const contractFileEl = document.getElementById('contractFile');
-    const clientNamesEl = document.getElementById('clientNames');
-    const propertyAddressOptionalEl = document.getElementById('propertyAddressOptional');
-    const analyzeButton = document.getElementById('analyzeButton');
-    const loaderEl = document.getElementById('loader');
-    const statusMessageEl = document.getElementById('statusMessage');
-    const resultsAreaEl = document.getElementById('resultsArea');
-    const displayPropertyAddressEl = document.getElementById('displayPropertyAddress');
-    const displaySpecialTermsEl = document.getElementById('displaySpecialTerms');
-    const keyDatesTableBodyEl = document.getElementById('keyDatesTableBody');
-    const emailPreviewEl = document.getElementById('emailPreview');
-    const copyEmailButton = document.getElementById('copyEmailButton');
-    const calendarLinksEl = document.getElementById('calendarLinks');
-    
-// ─── Global holder for parsed contract info ─────────────────────────
-let contractData = null;
-
-    // ---------- Helper regex & date-math for NH PSA ----------
-const inspChecklistRegex =
-  /(General|Radon|Lead|Pest)[^\n]{0,80}?within\s+(\d+)\s+days/i;
-
-const depositRegex =
-  /deposit[^\$\n]*\$([\d,]+)\s*(?:within\s*(\d+)\s*days|on or before\s*([A-Za-z0-9\/]+))/ig;
-
-function resolveRelative(offset, anchorStr) {
-  try {
-    const anchor = new Date(anchorStr);
-    if (isNaN(anchor)) return null;
-    const result = new Date(anchor);
-    result.setDate(result.getDate() + Number(offset));
-    return result.toLocaleDateString('en-US');
-  } catch {
-    return null;
-  }
-}
-
-function extractEffectiveDate(text) {
-  const m = text.match(/Effective Date[:\s]+([0-9\/]+)/i);
-  return m ? m[1] : null;
-}
-
-    // --- UI Helper Functions ---
-    function showStatus(message, type = 'info', duration = 0) {
-        statusMessageEl.textContent = message;
-        statusMessageEl.className = `text-center font-medium p-2 rounded-md`;
-        if (type === 'success') statusMessageEl.classList.add('bg-green-100', 'text-green-700');
-        else if (type === 'error') statusMessageEl.classList.add('bg-red-100', 'text-red-700');
-        else statusMessageEl.classList.add('bg-blue-100', 'text-blue-700');
-        statusMessageEl.classList.remove('hidden');
-
-        if (duration > 0) {
-            setTimeout(() => {
-                statusMessageEl.textContent = '';
-                statusMessageEl.classList.add('hidden');
-            }, duration);
-        }
-    }
-
-   function showLoader(show) {
-  loaderEl.style.display = show ? 'flex' : 'none';   // inline = highest priority
-  loaderEl.classList.toggle('hidden', !show);        // keeps Tailwind in sync
-  analyzeButton.disabled = show;
-  resultsAreaEl.classList.toggle('hidden', show);
-}
-
-
-    function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result.split(',')[1]);
-            reader.onerror = error => reject(error);
-        });
-    }
-    
-    // --- CORRECTED API Call ---
-    async function callGeminiAPI(prompt, base64File) {
-        // This creates the full, absolute URL to your API proxy.
-        // It combines the website's origin (e.g., https://your-app.vercel.app)
-        // with the path to your function (/api/gemini).
-        const apiUrl = `${window.location.origin}/api/gemini`;
-        
-        const response = await fetch(apiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            // The body now sends the prompt and base64pdf, which your gemini.js file expects
-            body: JSON.stringify({ prompt, base64pdf: base64File })
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
-        }
-        
-        // This part now receives the response forwarded from your gemini.js function
-        const responseBody = await response.json();
-
-        if (responseBody.error) {
-            console.error("Gemini API returned an error:", responseBody.error);
-            throw new Error("Gemini API error: " + (responseBody.error.message || JSON.stringify(responseBody.error)));
-        }
-        
-        const aiText = responseBody.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!aiText) {
-            console.error("Full Gemini API response:", responseBody);
-            throw new Error("AI response was not found in the expected format from Gemini API.");
-        }
-        return aiText;
-    }
-
-    // --- DOM Population Functions (Unchanged) ---
-    function populateCalendarLinks(allLinksData) {
-        calendarLinksEl.innerHTML = '';
-        if (!allLinksData || allLinksData.length === 0) {
-            calendarLinksEl.innerHTML = '<p class="text-gray-500">No calendar events to display.</p>';
-            return;
+            
+            return date;
         }
 
-        allLinksData.forEach(event => {
-            const formattedDate = new Date(event.date + 'T00:00:00Z').toLocaleDateString('en-US', {
-                year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+        function formatDate(date) {
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${month}/${day}/${year}`;
+        }
+
+        function parseComplexDateDescription(description, effectiveDate) {
+            // Handle variations like "5 calendar days", "ten (10) business days", etc.
+            const variations = {
+                'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+                'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+                'fifteen': 15, 'twenty': 20, 'thirty': 30
+            };
+            
+            // Replace written numbers with digits
+            let normalized = description.toLowerCase();
+            for (const [word, num] of Object.entries(variations)) {
+                normalized = normalized.replace(new RegExp(`\\b${word}\\b`, 'g'), num);
+            }
+            
+            // Extract parenthetical numbers like "ten (10)"
+            normalized = normalized.replace(/\w+\s*\((\d+)\)/g, '$1');
+            
+            return calculateRelativeDate(effectiveDate, normalized);
+        }
+
+        function validateAndEnrichContractData(data, clientInfo) {
+            // Use fallbacks for missing data
+            data.propertyAddress = data.propertyAddress || clientInfo.propertyAddressOptional || "Property Address Not Found";
+            
+            // Ensure dates are valid
+            data.keyDates = data.keyDates.filter(kd => {
+                try {
+                    const date = new Date(kd.date);
+                    return !isNaN(date.getTime());
+                } catch {
+                    return false;
+                }
             });
+            
+            // Add client names if not in contract
+            if (!data.parties || !data.parties.buyer) {
+                data.parties = { buyer: clientInfo.clientNames };
+            }
+            
+            // Generate special terms summary if missing
+            if (!data.specialTerms && data.contingencies && data.contingencies.length > 0) {
+                data.specialTerms = "This contract includes the following contingencies: " + 
+                                   data.contingencies.map(c => c.type).join(", ");
+            }
+            
+            return data;
+        }
 
-            const eventHTML = `
-              <div class="p-3 bg-gray-50 rounded-lg border">
-                  <p class="font-semibold text-gray-800">${event.eventName} - <span class="font-normal text-gray-600">${formattedDate}</span></p>
-                  <div class="flex items-center flex-wrap gap-2 mt-2">
-                      <a href="${event.links.google}" target="_blank" class="text-sm bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600">Google</a>
-                      <a href="${event.links.outlook}" target="_blank" class="text-sm bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Outlook</a>
-                      <a href="${event.links.apple}" download="${event.eventName}.ics" class="text-sm bg-gray-800 text-white px-2 py-1 rounded hover:bg-black">Apple</a>
-                      <a href="${event.links.yahoo}" target="_blank" class="text-sm bg-purple-600 text-white px-2 py-1 rounded hover:bg-purple-700">Yahoo</a>
-                  </div>
-                  ${event.error ? `<p class="text-red-500 text-xs mt-1">${event.error}</p>` : ''}
-              </div>
-          `;
-            calendarLinksEl.innerHTML += eventHTML;
-        });
-    }
+        async function callGeminiAPI(prompt, pdfBase64) {
+            const API_KEY = 'AIzaSyCobwBNmNDqs2vM2FF0IsaOl4PJLmJC1zA';
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
-    // --- Main Form Submit Handler (Unchanged) ---
-    contractForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        console.log("📝 Form submission intercepted. Starting analysis process.");
-
-        showLoader(true);
-        showStatus("Starting analysis...", "info");
-
-        try {
-            const file = contractFileEl.files[0];
-            const clientInfo = {
-                clientNames: clientNamesEl.value.trim(),
-                propertyAddressOptional: propertyAddressOptionalEl.value.trim()
+            const requestBody = {
+                contents: [{
+                    parts: [
+                        { text: prompt },
+                        {
+                            inlineData: {
+                                mimeType: "application/pdf",
+                                data: pdfBase64
+                            }
+                        }
+                    ]
+                }]
             };
 
-            // 1. Validate Input
-            if (!file || file.type !== "application/pdf" || file.size > 10 * 1024 * 1024) {
-                throw new Error("Please upload a valid PDF file under 10MB.");
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            if (!response.ok) {
+                throw new Error(`API request failed: ${response.statusText}`);
             }
-            if (!clientInfo.clientNames) {
-                throw new Error("Please enter the client name(s).");
-            }
 
-            // 2. Process File and Call API
-            showStatus("Converting file for analysis...", "info");
-            const base64File = await fileToBase64(file);
-            
-           
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
 
-const prompt = `
-TASK:
-You are an AI contract parser for real estate agreements.
+        async function analyzePDF(file, clientInfo) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = async function(e) {
+                    try {
+                        const base64File = e.target.result.split(',')[1];
+                        
+                        const prompt = `
+You are an expert real estate contract analyzer. Extract ALL critical information from this contract.
 
-Return valid JSON as an object containing two properties:
+CRITICAL: For relative dates (e.g., "within 10 days of effective date"), include both the description AND calculate the actual date.
 
----
-
-1. "dates" — an array of objects, each with:
-- type (inspection | deposit | closing | financing)
-- amount (number)                // deposit only
-- absoluteDate (MM/DD/YYYY)     // literal date
-- offsetDays (number)           // "within N days"
-- anchorEvent (Effective Date, Acceptance, etc.)
-
-Rules:
-- If both literal and relative dates exist for an item, prefer the literal.
-- If only relative, fill offsetDays and anchorEvent; leave absoluteDate null.
-
----
-
-2. "signatures" — an object with:
-- buyerSignatureDate: "MM/DD/YYYY" or null
-- sellerSignatureDate: "MM/DD/YYYY" or null
-
-Only extract dates that are clearly associated with the Buyer or Seller signing the contract.
-Do not return today's date or make assumptions.
-If one party has not signed, return null for that party.
-
----
-
-Output format:
+Return a JSON object with this EXACT structure:
 {
-  "dates": [...],
-  "signatures": {
-    "buyerSignatureDate": "06/13/2025",
-    "sellerSignatureDate": "06/16/2025"
-  }
+  "propertyAddress": "full property address",
+  "purchasePrice": numeric value (no formatting),
+  "effectiveDate": "MM/DD/YYYY",
+  "closingDate": "MM/DD/YYYY",
+  "keyDates": [
+    {
+      "name": "event name",
+      "date": "MM/DD/YYYY or null if relative",
+      "relativeDays": number if applicable,
+      "relativeType": "calendar" or "business",
+      "relativeFrom": "effective" or "closing" or other reference,
+      "description": "full description including relative date language"
+    }
+  ],
+  "specialTerms": "summary of special conditions/contingencies",
+  "parties": {
+    "buyer": "buyer name(s)",
+    "seller": "seller name(s)"
+  },
+  "deposits": [
+    {
+      "name": "Earnest Money" or "Additional Deposit",
+      "amount": numeric value,
+      "dueDate": "MM/DD/YYYY or null if relative",
+      "relativeDays": number if applicable,
+      "relativeType": "calendar" or "business",
+      "relativeFrom": "effective" or other reference,
+      "description": "full description of deposit terms"
+    }
+  ]
 }
 
-Only return valid JSON. Do not include explanation, markdown, or formatting.
+Extract these items:
+1. ALL deposits/earnest money with amounts and deadlines
+2. Inspection periods (note if calendar days or business days)
+3. Financing contingency deadline
+4. Appraisal deadline
+5. Title review period
+6. Closing and possession dates
+7. Any other deadlines mentioned
+
+For relative dates like "within 10 days of effective date":
+- Set "date" to null
+- Set "relativeDays" to 10
+- Set "relativeType" to "calendar" or "business" 
+- Set "relativeFrom" to "effective" (or whatever the reference date is)
+- Include the full language in "description"
+
+Return ONLY valid JSON, no explanations or markdown.
 `;
 
+                        const aiResponseText = await callGeminiAPI(prompt, base64File);
+                        
+                        if (DEBUG) {
+                            console.log("Raw AI Response:", aiResponseText);
+                        }
+                        
+                        // Better JSON extraction
+                        let contractData;
+                        try {
+                            // Remove any markdown formatting
+                            const jsonMatch = aiResponseText.match(/```json\s*([\s\S]*?)```/i) || 
+                                              aiResponseText.match(/```\s*([\s\S]*?)```/i);
+                            const jsonText = jsonMatch ? jsonMatch[1].trim() : aiResponseText.trim();
+                            
+                            // Clean up common JSON issues
+                            const cleanedJson = jsonText
+                                .replace(/,\s*}/g, '}')  // Remove trailing commas
+                                .replace(/,\s*]/g, ']')
+                                .replace(/[\u201C\u201D]/g, '"')  // Replace smart quotes
+                                .replace(/[\u2018\u2019]/g, "'");
+                            
+                            contractData = JSON.parse(cleanedJson);
+                            
+                            if (DEBUG) {
+                                console.log("Parsed Data:", contractData);
+                            }
+                            
+                            // Process relative dates for both keyDates and deposits
+                            const effectiveDate = contractData.effectiveDate;
+                            const closingDate = contractData.closingDate;
 
+                            // Calculate actual dates for relative dates
+                            if (contractData.keyDates) {
+                                contractData.keyDates = contractData.keyDates.map(kd => {
+                                    if (!kd.date && kd.relativeDays && kd.relativeFrom) {
+                                        const baseDate = kd.relativeFrom === 'closing' ? closingDate : effectiveDate;
+                                        if (baseDate) {
+                                            const calculatedDate = calculateRelativeDate(
+                                                baseDate, 
+                                                `within ${kd.relativeDays} ${kd.relativeType || 'calendar'} days`
+                                            );
+                                            if (calculatedDate) {
+                                                kd.date = formatDate(calculatedDate);
+                                                kd.description = `${kd.description} (${kd.relativeDays} ${kd.relativeType || 'calendar'} days from ${kd.relativeFrom} date)`;
+                                            }
+                                        }
+                                    }
+                                    return kd;
+                                });
+                            }
 
+                            // Process deposits with relative dates
+                            if (contractData.deposits) {
+                                contractData.deposits = contractData.deposits.map(dep => {
+                                    if (!dep.dueDate && dep.relativeDays && dep.relativeFrom) {
+                                        const baseDate = dep.relativeFrom === 'closing' ? closingDate : effectiveDate;
+                                        if (baseDate) {
+                                            const calculatedDate = calculateRelativeDate(
+                                                baseDate, 
+                                                `within ${dep.relativeDays} ${dep.relativeType || 'calendar'} days`
+                                            );
+                                            if (calculatedDate) {
+                                                dep.dueDate = formatDate(calculatedDate);
+                                                dep.description = `${dep.description} (${dep.relativeDays} ${dep.relativeType || 'calendar'} days from ${dep.relativeFrom} date)`;
+                                            }
+                                        }
+                                    }
+                                    return dep;
+                                });
+                                
+                                // Add deposits to keyDates for unified handling
+                                contractData.deposits.forEach(dep => {
+                                    if (dep.dueDate) {
+                                        contractData.keyDates.push({
+                                            name: `${dep.name}: $${dep.amount.toLocaleString()}`,
+                                            date: dep.dueDate,
+                                            description: dep.description || `Deposit due`,
+                                            isDeposit: true,
+                                            amount: dep.amount
+                                        });
+                                    }
+                                });
+                            }
 
-            showStatus("Sending to your AI Assistant... (This may take a moment)", "info");
-            const aiResponseText = await callGeminiAPI(prompt, base64File);
-            
-            // 3. Parse AI Response
-            showStatus("AI response received. Parsing results...", "info");
-            const match = aiResponseText.match(/```json\s*([\s\S]*?)```/i);
-           const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
-const parsed = JSON.parse(cleanedJsonText);
-            
-// --- 🔧 Effective Date Helper ---
-function calculateEffectiveDate(data) {
-  const buyerRaw = data.buyerSignatureDate;
-  const sellerRaw = data.sellerSignatureDate;
-
-  const buyerDate = buyerRaw ? new Date(buyerRaw) : null;
-  const sellerDate = sellerRaw ? new Date(sellerRaw) : null;
-
-  const isBuyerValid = buyerDate instanceof Date && !isNaN(buyerDate);
-  const isSellerValid = sellerDate instanceof Date && !isNaN(sellerDate);
-
-  if (!isBuyerValid && !isSellerValid) {
-    showStatus("⚠️ Could not find a valid signature date for Buyer or Seller. Please review manually.", "warning", 5000);
-    return null;
-  }
-
-  if (isBuyerValid && !isSellerValid) return buyerDate.toLocaleDateString();
-  if (!isBuyerValid && isSellerValid) return sellerDate.toLocaleDateString();
-
-  const latest = new Date(Math.max(buyerDate, sellerDate));
-  return latest.toLocaleDateString();
-}
-
-// ------------------------------------------------------------------------
-
-// Pull both parts
-let items = parsed.dates || [];
-const signatureDates = parsed.signatures || {};
-const effectiveDate = calculateEffectiveDate(signatureDates);
-
-             
-          
-// ---------- helper: convert items[] to the object the old UI expects ------
-function buildLegacyObject(items) {
-  const out = {
-    propertyAddress: '',      // we don't parse this yet
-    purchasePrice: null,      // add later if desired
-    specialTerms: '',
-    keyDates: [],
-  };
-
-  items.forEach(it => {
-    if (it.type === 'closing' && it.absoluteDate) {
-      out.keyDates.push({ name: 'Closing', date: it.absoluteDate });
-    }
-    if (it.type === 'inspection' && it.absoluteDate) {
-      out.keyDates.push({ name: 'Inspection', date: it.absoluteDate });
-    }
-    if (it.type === 'deposit') {
-      out.keyDates.push({
-        name: `Deposit $${it.amount.toLocaleString()}`,
-        date: it.absoluteDate ||
-              `${it.offsetDays} days after ${it.anchorEvent}`
-      });
-    }
-  });
-
-
-  return out;
-}
-
-  // 3️⃣ Convert relative → absolute
-items = items.map(i => {
-  if (i.offsetDays && effectiveDate) {
-    i.absoluteDate = resolveRelative(i.offsetDays, effectiveDate);
-  }
-  return i;
-});
-
-
-// build the legacy object so the existing UI keeps working
-contractData = buildLegacyObject(items);   // transform array ➜ object
-// displayResults(contractData); // already handled below
-
-
-            // 4. Populate the UI with Results
-            console.log("Populating results...");
-            
-            const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "The Property";
-            const keyDates = Array.isArray(contractData.keyDates) ? contractData.keyDates : [];
-            const specialTermsText = contractData.specialTerms || '';
-            const purchasePrice = contractData.purchasePrice ?
-                new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(contractData.purchasePrice) :
-                'the agreed-upon price';
-            
-            displayPropertyAddressEl.textContent = finalPropertyAddress;
-            displaySpecialTermsEl.textContent = specialTermsText || 'Standard contract terms apply.';
-            
-            keyDatesTableBodyEl.innerHTML = '';
-            if (keyDates.length) {
-                keyDates.forEach(kd => {
-                    const row = keyDatesTableBodyEl.insertRow();
-                    row.insertCell().textContent = kd.name;
-                    try {
-                        const dateCell = row.insertCell();
-                        dateCell.textContent = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
-                            year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-                        });
-                    } catch {
-                        row.insertCell().textContent = kd.date || 'Invalid Date';
+                            // Sort all dates chronologically
+                            contractData.keyDates.sort((a, b) => new Date(a.date) - new Date(b.date));
+                            
+                            if (DEBUG) {
+                                console.log("Key Dates Found:", contractData.keyDates);
+                            }
+                            
+                            // Validate and enrich the data
+                            contractData = validateAndEnrichContractData(contractData, clientInfo);
+                            
+                            resolve(contractData);
+                            
+                        } catch (parseError) {
+                            console.error("JSON parsing error:", parseError);
+                            reject(new Error("Failed to parse contract data. Please try again."));
+                        }
+                        
+                    } catch (error) {
+                        console.error("Error analyzing PDF:", error);
+                        reject(error);
                     }
-                });
-            } else {
-                const row = keyDatesTableBodyEl.insertRow();
-                const cell = row.insertCell();
-                cell.colSpan = 2;
-                cell.textContent = 'No key dates were extracted from the contract.';
-            }
-
-            let keyDatesHtml = keyDates.map(kd => {
-                const formattedDate = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
-                    year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-                });
-                return `<li><strong>${kd.name}:</strong> ${formattedDate}</li>`;
-            }).join('');
-
-            const emailSubject = `🎉 WE DID IT! ${finalPropertyAddress} is Under Contract!`;
-            const emailBody = `
-                <p>Hi ${clientInfo.clientNames},</p>
-                <p>Congratulations! We are officially under contract on ${finalPropertyAddress}!</p>
-                <p>Here's a quick rundown of the key dates and terms in the contract:</p>
-                <p>Purchase price is <strong>${purchasePrice}</strong>,</p>
-                <ul>${keyDatesHtml}</ul>
-                ${specialTermsText ? `<p><strong>Additional Terms:</strong> This contract includes a contingency that it's ${specialTermsText.toLowerCase()}</p>` : ''}
-                <p><strong>Next Steps:</strong> I'll be monitoring all these deadlines closely and will keep you informed every step of the way. You can also add these deadlines to your calendar using the links I've included here.</p>
-                <p>This is an exciting milestone! Please don't hesitate to reach out if you have any questions – I'm here to support you throughout this process.</p>
-                <br>
-                <p><em><small>This was prepared with the help of my trusty AI assistant. Make sure to refer to the original document for detailed information.</small></em></p>
-            `;
-
-            emailPreviewEl.innerHTML = `<strong>Subject: ${emailSubject}</strong><hr class="my-2">${emailBody}`;
-            
-            const allCalendarLinks = calendarUtils.generateAllCalendarLinks(keyDates, finalPropertyAddress);
-            populateCalendarLinks(allCalendarLinks);
-            resultsAreaEl.classList.remove('hidden');
-            
-            showStatus("✅ Analysis complete!", "success", 4000);
-
-       } catch (error) {
-  console.error("❌ A critical error occurred during the process:", error);
-
-  showStatus("Error: " + error.message, "error", 15000);        
-        } finally {
-            console.log("✅ Process finished. Hiding loader.");
-            showLoader(false);
+                };
+                
+                reader.onerror = function() {
+                    reject(new Error("Failed to read PDF file"));
+                };
+                
+                reader.readAsDataURL(file);
+            });
         }
-    });
 
-    // --- Rich Text Copy Button Event Listener (Unchanged) ---
-  copyEmailButton.addEventListener('click', (event) => {
-    event.preventDefault(); // ← THIS stops the form from clearing
-    const htmlToCopy = emailPreviewEl.innerHTML;
-    navigator.clipboard.write([
-        new ClipboardItem({
-            "text/html": new Blob([htmlToCopy], { type: "text/html" }),
-            "text/plain": new Blob([emailPreviewEl.innerText], { type: "text/plain" })
-        })
-    ]).then(() => {
-        showStatus("✅ Formatted email copied to clipboard!", "success", 3000);
-    }).catch(err => {
-        console.error('Failed to copy HTML: ', err);
-        showStatus("❌ Oops! Could not copy email.", "error", 4000);
-    });
-});
+        function generateCalendarLink(event, clientInfo) {
+            const date = new Date(event.date);
+            const startDate = date.toISOString().replace(/-|:|\.\d\d\d/g, '');
+            const endDate = new Date(date.getTime() + 60 * 60 * 1000).toISOString().replace(/-|:|\.\d\d\d/g, '');
+            
+            const details = `${event.description}\n\nClient: ${clientInfo.clientNames}`;
+            
+            const googleUrl = `https://calendar.google.com/calendar/r/eventedit?text=${encodeURIComponent(event.name)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(details)}`;
+            
+            return googleUrl;
+        }
 
-       
-    // Initialize Feather Icons
-    feather.replace();
-});
-</script>
+        function generateKeyDatesHtml(keyDates, clientInfo) {
+            return keyDates.map(kd => {
+                const isDeposit = kd.isDeposit || kd.name.includes('Deposit');
+                const emoji = isDeposit ? '💰' : '📋';
+                const importance = isDeposit ? ' style="font-weight: bold; color: #d9534f;"' : '';
+                
+                const calendarLink = generateCalendarLink({
+                    name: kd.name,
+                    date: kd.date,
+                    description: kd.description + (isDeposit ? ` - Amount: $${kd.amount?.toLocaleString() || 'See contract'}` : '')
+                }, clientInfo);
+                
+                return `<li${importance}>${emoji} <strong>${kd.name}</strong>: ${kd.date} 
+                        <a href="${calendarLink}" target="_blank">📅 Add to Calendar</a>
+                        ${kd.description ? `<br><em style="font-size: 0.9em; color: #666;">${kd.description}</em>` : ''}
+                        </li>`;
+            }).join('\n');
+        }
 
+        function generateEmailContent(contractData, clientInfo) {
+            const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "Property Address";
+            const purchasePrice = contractData.purchasePrice ? `$${contractData.purchasePrice.toLocaleString()}` : "See Contract";
+            
+            const keyDatesHtml = generateKeyDatesHtml(contractData.keyDates || [], clientInfo);
+            const specialTermsText = contractData.specialTerms || "";
+            
+            // Generate deposits section for email
+            const depositsHtml = contractData.deposits && contractData.deposits.length > 0 ? 
+                contractData.deposits.map(dep => {
+                    const amount = `$${dep.amount.toLocaleString()}`;
+                    const dueDate = dep.dueDate || 'Date to be calculated';
+                    const calendarLink = dep.dueDate ? 
+                        `<a href="${generateCalendarLink({
+                            name: `${dep.name} Due`,
+                            date: dep.dueDate,
+                            description: `${dep.name} payment of ${amount} is due today. ${dep.description || ''}`
+                        }, clientInfo)}" target="_blank">📅 Add to Calendar</a>` : '';
+                    
+                    return `<li><strong>${dep.name}:</strong> ${amount} due ${dueDate} ${calendarLink}<br>
+                            <em style="font-size: 0.9em; color: #666;">${dep.description || ''}</em></li>`;
+                }).join('\n') : '';
+            
+            const emailBody = `
+<p>Hi ${clientInfo.clientNames},</p>
+<p>Congratulations! We are officially under contract on <strong>${finalPropertyAddress}</strong>!</p>
+<p>Here's your contract summary:</p>
+<ul>
+    <li><strong>Purchase Price:</strong> ${purchasePrice}</li>
+    <li><strong>Effective Date:</strong> ${contractData.effectiveDate || 'TBD'}</li>
+    <li><strong>Closing Date:</strong> ${contractData.closingDate || 'TBD'}</li>
+    ${contractData.parties?.seller ? `<li><strong>Seller:</strong> ${contractData.parties.seller}</li>` : ''}
+</ul>
+
+${depositsHtml ? `
+<h3>💰 Deposit Schedule:</h3>
+<ul>${depositsHtml}</ul>
+` : ''}
+
+<h3>🗓️ Important Dates & Deadlines:</h3>
+<ul>${keyDatesHtml}</ul>
+
+${specialTermsText ? `<h3>📌 Special Terms:</h3><p>${specialTermsText}</p>` : ''}
+
+<p><strong>Next Steps:</strong> I'll monitor all these deadlines closely and keep you informed every step of the way. 
+Please ensure all deposits are ready by their due dates.</p>
+
+<p>Please save these dates to your calendar using the links above!</p>
+<hr>
+<p><em>Questions? Reply to this email or call me anytime!</em></p>
+`;
+            
+            return {
+                subject: `Contract Executed - ${finalPropertyAddress}`,
+                body: emailBody,
+                recipients: clientInfo.clientEmails,
+                propertyAddress: finalPropertyAddress
+            };
+        }
+
+        // Form submission handler
+        document.getElementById('contractForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('contractFile');
+            const clientInfo = {
+                clientNames: document.getElementById('clientNames').value,
+                clientEmails: document.getElementById('clientEmails').value,
+                propertyAddressOptional: document.getElementById('propertyAddressOptional').value
+            };
+            
+            if (!fileInput.files[0]) {
+                alert('Please select a PDF file');
+                return;
+            }
+            
+            // Show loading, hide results
+            document.getElementById('loadingDiv').style.display = 'block';
+            document.getElementById('resultsDiv').style.display = 'none';
+            document.getElementById('errorDiv').style.display = 'none';
+            document.getElementById('submitBtn').disabled = true;
+            
+            try {
+                const contractData = await analyzePDF(fileInput.files[0], clientInfo);
+                const emailContent = generateEmailContent(contractData, clientInfo);
+                
+                // Display results
+                document.getElementById('emailPreview').innerHTML = `
+                    <h3>Email Preview</h3>
+                    <p><strong>To:</strong> ${emailContent.recipients}</p>
+                    <p><strong>Subject:</strong> ${emailContent.subject}</p>
+                    <div style="border: 1px solid #ccc; padding: 20px; margin-top: 10px; background: #f9f9f9;">
+                        ${emailContent.body}
+                    </div>
+                `;
+                
+                document.getElementById('resultsDiv').style.display = 'block';
+                
+                // Store email content for sending
+                window.currentEmailContent = emailContent;
+                
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('errorDiv').textContent = error.message;
+                document.getElementById('errorDiv').style.display = 'block';
+            } finally {
+                document.getElementById('loadingDiv').style.display = 'none';
+                document.getElementById('submitBtn').disabled = false;
+            }
+        });
+        
+        // Email sending handler
+        document.getElementById('sendEmailBtn').addEventListener('click', async () => {
+            if (window.currentEmailContent) {
+                const subject = encodeURIComponent(window.currentEmailContent.subject);
+                const body = encodeURIComponent(window.currentEmailContent.body.replace(/<[^>]*>/g, ''));
+                const mailtoLink = `mailto:${window.currentEmailContent.recipients}?subject=${subject}&body=${body}`;
+                
+                window.open(mailtoLink, '_blank');
+            }
+        });
+    </script>
 </body>
 </html>
-
