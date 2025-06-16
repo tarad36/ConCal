@@ -1,17 +1,17 @@
-<!--
-   [I have read and tried to apply the feedback for this file, and I have tried to resolve the problem. If I have not resolved the problem, I have left a comment explaining why I was unable to do so.]
---><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contract Analyzer & Timeline Generator - Real Estate Professional Tool</title>
     
-    <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
-    <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
-    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap)" rel="stylesheet">
+   
     
-    <script src="[https://unpkg.com/feather-icons](https://unpkg.com/feather-icons)"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/feather-icons"></script>
     
     <style>
         body {
@@ -104,10 +104,13 @@
         }
     </style>
     
+    
+ <link rel="stylesheet" href="/styles.css">
+
 </head>
 <body class="bg-gray-100">
 
-    <nav class="bg-blue-600 text-white p-4 shadow-md">
+    <nav class="bg-brand-600 text-white p-4 shadow-md">
         <div class="container mx-auto">
             <h1 class="text-2xl font-bold">Contract Timeline App</h1>
         </div>
@@ -118,7 +121,7 @@
         <form id="contractForm" class="grid md:grid-cols-2 gap-6">
             <!-- Card 1: Contract Details -->
             <div class="card">
-                <h2 class="text-xl font-semibold mb-4 text-blue-700 flex items-center">
+                <h2 class="text-xl font-semibold mb-4 text-brand-700 flex items-center">
                     <i data-feather="file-text" class="mr-2"></i>Contract Details
                 </h2>
                 
@@ -129,7 +132,7 @@
                 </div>
 
                 <div class="mt-4">
-                    <label for="clientNames" class="label">2. Client Name(s):</label>
+                    <label for="clientNames" class="label">2. Client FIRST Name(s):</label>
                     <input type="text" id="clientNames" class="input" placeholder="e.g., John Doe & Jane Smith" required>
                 </div>
                 
@@ -147,28 +150,29 @@
             </div>
 
             <!-- Card 2: How it Works -->
-            <div class="card bg-blue-50">
-                 <h2 class="text-xl font-semibold mb-4 text-blue-700 flex items-center">
+            <div class="card bg-brand-50">
+                 <h2 class="text-xl font-semibold mb-4 text-brand-700 flex items-center">
                     <i data-feather="info" class="mr-2"></i>How it Works
                 </h2>
-                <p class="text-gray-700 mb-2">1.  <strong class="text-blue-600">Upload PDF:</strong> Select the real estate contract (PDF format).</p>
-                <p class="text-gray-700 mb-2">2.  <strong class="text-blue-600">Enter Info:</strong> Provide client and your names.</p>
-                <p class="text-gray-700 mb-2">3.  <strong class="text-blue-600">Analyze:</strong> Click "Analyze Contract". The AI will extract key dates and information.</p>
-                <p class="text-gray-700">4.  <strong class="text-blue-600">Get Results:</strong> Review the generated client email and calendar event links.</p>
+                <p class="text-gray-700 mb-2">1.  <strong class="text-brand-600">Upload PDF:</strong> Select the real estate contract (PDF format).</p>
+                <p class="text-gray-700 mb-2">2.  <strong class="text-brand-600">Enter Info:</strong> Provide client.</p>
+                <p class="text-gray-700 mb-2">3.  <strong class="text-brand-600">Analyze:</strong> Click "Analyze Contract". The AI will extract key dates and information.</p>
+                <p class="text-gray-700">4.  <strong class="text-brand-600">Get Results:</strong> Review the generated client email and calendar event links.</p>
                 <p class="text-sm text-gray-500 mt-4">This tool uses AI to process your contract. Ensure your PDF is clear and legible for best results. No contract content is stored by this application after processing.</p>
             </div>
         </form>
 
        <!-- Status Section -->
-		<div id="statusSection" class="my-4 text-center">
-		  <!-- Loader -->
-		  <div id="loader"
-			   class="loader hidden"
-			   style="display:none">
-		  </div>
+<div id="statusSection" class="my-4 text-center">
+  <!-- Loader -->
+  <div id="loader"
+       class="loader hidden"
+       style="display:none">
+    <!-- put your spinner SVG or CSS animation here -->
+  </div>
 
-		  <p id="statusMessage" class="text-gray-700 font-medium"></p>
-		</div>
+  <p id="statusMessage" class="text-gray-700 font-medium"></p>
+</div>
 
 
         <!-- Results Area -->
@@ -218,12 +222,11 @@
 -->
 <script>
 // --- Class: CalendarUtils ---
+// NOTE: This class is unchanged as its logic is sound.
 class CalendarUtils {
     prepareEventDetails(eventData, propertyAddress) {
         const formatDateForCalendar = (dateStr) => {
             try {
-                // Handle relative dates gracefully
-                if (typeof dateStr === 'string' && dateStr.includes('days after')) return null;
                 const date = new Date(dateStr);
                 if (isNaN(date.getTime())) return null;
                 const year = date.getUTCFullYear();
@@ -254,7 +257,7 @@ class CalendarUtils {
 
     generateGoogleCalendarLink(details) {
         if (!details || !details.startDate) return '#';
-        const base = '[https://www.google.com/calendar/render?action=TEMPLATE](https://www.google.com/calendar/render?action=TEMPLATE)';
+        const base = 'https://www.google.com/calendar/render?action=TEMPLATE';
         const params = new URLSearchParams({
             text: details.title,
             dates: `${details.startDate}/${details.endDate || details.startDate}`,
@@ -268,7 +271,7 @@ class CalendarUtils {
 
     generateOutlookCalendarLink(details) {
         if (!details || !details.startDate) return '#';
-        const base = '[https://outlook.live.com/calendar/0/deeplink/compose](https://outlook.live.com/calendar/0/deeplink/compose)';
+        const base = 'https://outlook.live.com/calendar/0/deeplink/compose';
         const sYear = parseInt(details.startDate.substring(0, 4));
         const sMonth = parseInt(details.startDate.substring(4, 6)) - 1;
         const sDay = parseInt(details.startDate.substring(6, 8));
@@ -383,59 +386,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyEmailButton = document.getElementById('copyEmailButton');
     const calendarLinksEl = document.getElementById('calendarLinks');
     
-    // --- Global holder for parsed contract info ---
-    let contractData = null;
+// ─── Global holder for parsed contract info ─────────────────────────
+let contractData = null;
 
-    // --- Regex & Date Helpers ---
-    const inspChecklistRegex = /(General|Radon|Lead|Pest)[^\n]{0,80}?within\s+(\d+)\s+days/i;
-    const depositRegex = /deposit[^\$\n]*\$([\d,]+)\s*(?:within\s*(\d+)\s*days|on or before\s*([A-Za-z0-9\/]+))/ig;
+    // ---------- Helper regex & date-math for NH PSA ----------
+const inspChecklistRegex =
+  /(General|Radon|Lead|Pest)[^\n]{0,80}?within\s+(\d+)\s+days/i;
 
-    function resolveRelative(offset, anchorStr) {
-        try {
-            const anchor = new Date(anchorStr);
-            if (isNaN(anchor)) return null;
-            const result = new Date(anchor);
-            result.setDate(result.getDate() + Number(offset));
-            return result.toLocaleDateString('en-US');
-        } catch {
-            return null;
-        }
-    }
+const depositRegex =
+  /deposit[^\$\n]*\$([\d,]+)\s*(?:within\s*(\d+)\s*days|on or before\s*([A-Za-z0-9\/]+))/ig;
 
-    function extractEffectiveDate(text) {
-        const m = text.match(/Effective Date[:\s]+([0-9\/]+)/i);
-        return m ? m[1] : null;
-    }
+function resolveRelative(offset, anchorStr) {
+  try {
+    const anchor = new Date(anchorStr);
+    if (isNaN(anchor)) return null;
+    const result = new Date(anchor);
+    result.setDate(result.getDate() + Number(offset));
+    return result.toLocaleDateString('en-US');
+  } catch {
+    return null;
+  }
+}
 
-    // --- Data Transformation Helper ---
-    // This function converts the array from the AI into the object structure the UI expects
-    function buildLegacyObject(items) {
-        const out = {
-            propertyAddress: '',      // We don't parse this yet
-            purchasePrice: null,      // Add later if desired
-            specialTerms: '',
-            keyDates: [],
-        };
-
-        if (!Array.isArray(items)) return out;
-
-        items.forEach(it => {
-            if (it.type === 'closing' && it.absoluteDate) {
-                out.keyDates.push({ name: 'Closing', date: it.absoluteDate });
-            }
-            if (it.type === 'inspection' && it.absoluteDate) {
-                out.keyDates.push({ name: 'Inspection', date: it.absoluteDate });
-            }
-            if (it.type === 'deposit') {
-                out.keyDates.push({
-                    name: `Deposit $${it.amount ? it.amount.toLocaleString() : 'N/A'}`,
-                    date: it.absoluteDate || (it.offsetDays ? `${it.offsetDays} days after ${it.anchorEvent}` : 'Date TBD')
-                });
-            }
-        });
-
-        return out;
-    }
+function extractEffectiveDate(text) {
+  const m = text.match(/Effective Date[:\s]+([0-9\/]+)/i);
+  return m ? m[1] : null;
+}
 
     // --- UI Helper Functions ---
     function showStatus(message, type = 'info', duration = 0) {
@@ -454,14 +430,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function showLoader(show) {
-        loaderEl.style.display = show ? 'block' : 'none';
-        loaderEl.classList.toggle('hidden', !show);
-        analyzeButton.disabled = show;
-        if (show) {
-           resultsAreaEl.classList.add('hidden');
-        }
-    }
+   function showLoader(show) {
+  loaderEl.style.display = show ? 'flex' : 'none';   // inline = highest priority
+  loaderEl.classList.toggle('hidden', !show);        // keeps Tailwind in sync
+  analyzeButton.disabled = show;
+  resultsAreaEl.classList.toggle('hidden', show);
+}
+
 
     function fileToBase64(file) {
         return new Promise((resolve, reject) => {
@@ -472,12 +447,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // --- API Call Function ---
+    // --- CORRECTED API Call ---
     async function callGeminiAPI(prompt, base64File) {
+        // This creates the full, absolute URL to your API proxy.
+        // It combines the website's origin (e.g., https://your-app.vercel.app)
+        // with the path to your function (/api/gemini).
         const apiUrl = `${window.location.origin}/api/gemini`;
+        
         const response = await fetch(apiUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            // The body now sends the prompt and base64pdf, which your gemini.js file expects
             body: JSON.stringify({ prompt, base64pdf: base64File })
         });
 
@@ -486,6 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error(`API request failed: ${response.status} ${response.statusText} - ${errorText}`);
         }
         
+        // This part now receives the response forwarded from your gemini.js function
         const responseBody = await response.json();
 
         if (responseBody.error) {
@@ -501,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return aiText;
     }
 
-    // --- DOM Population Function ---
+    // --- DOM Population Functions (Unchanged) ---
     function populateCalendarLinks(allLinksData) {
         calendarLinksEl.innerHTML = '';
         if (!allLinksData || allLinksData.length === 0) {
@@ -510,9 +491,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         allLinksData.forEach(event => {
-            if (!event.date || (typeof event.date === 'string' && event.date.includes('days after'))) {
-                return; // Skip events with relative or invalid dates for calendar links
-            }
             const formattedDate = new Date(event.date + 'T00:00:00Z').toLocaleDateString('en-US', {
                 year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
             });
@@ -533,7 +511,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Main Form Submit Handler ---
+    // --- Main Form Submit Handler (Unchanged) ---
     contractForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         console.log("📝 Form submission intercepted. Starting analysis process.");
@@ -541,7 +519,6 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoader(true);
         showStatus("Starting analysis...", "info");
 
-        // The main try...catch block for the whole process
         try {
             const file = contractFileEl.files[0];
             const clientInfo = {
@@ -561,93 +538,80 @@ document.addEventListener('DOMContentLoaded', () => {
             showStatus("Converting file for analysis...", "info");
             const base64File = await fileToBase64(file);
             
-            const prompt = `
-                TASK:
-                You are an AI contract parser.
-                Return JSON (array of objects). Each object has:
-                - type (inspection | deposit | closing | financing)
-                - amount (number)                # deposit only
-                - absoluteDate (MM/DD/YYYY)      # literal date
-                - offsetDays (number)            # "within N days"
-                - anchorEvent (Effective Date, Acceptance, etc.)
+           
+const prompt = `
+TASK:
+You are an AI contract parser.
+Return JSON (array of objects). Each object has:
+- type (inspection | deposit | closing | financing)
+- amount (number)                # deposit only
+- absoluteDate (MM/DD/YYYY)      # literal date
+- offsetDays (number)            # "within N days"
+- anchorEvent (Effective Date, Acceptance, etc.)
 
-                Rules:
-                - If both literal and relative dates exist, keep literal.
-                - If only relative, fill offsetDays and anchorEvent; leave absoluteDate null.
-                Return ONLY valid JSON, no extra text.
-            `;
+Rules:
+- If both literal and relative dates exist, keep literal.
+- If only relative, fill offsetDays and anchorEvent; leave absoluteDate null.
+Return ONLY valid JSON, no extra text.
+`;
+
+
 
             showStatus("Sending to your AI Assistant... (This may take a moment)", "info");
             const aiResponseText = await callGeminiAPI(prompt, base64File);
             
-            // 3. Parse and Process AI Response
-            showStatus("AI response received. Processing results...", "info");
+            // 3. Parse AI Response
+            showStatus("AI response received. Parsing results...", "info");
             const match = aiResponseText.match(/```json\s*([\s\S]*?)```/i);
             const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
-            
-            let items = JSON.parse(cleanedJsonText);
-            
-            /*
-            // DEVELOPER NOTE: The code below relies on extracting the full text from the PDF 
-            // into a variable named 'rawText'. This functionality is not yet implemented.
-            
-            const rawText = ""; // <-- POPULATE THIS WITH TEXT EXTRACTED FROM THE PDF
+             
+          
+// ---------- helper: convert items[] to the object the old UI expects ------
+function buildLegacyObject(items) {
+  const out = {
+    propertyAddress: '',      // we don't parse this yet
+    purchasePrice: null,      // add later if desired
+    specialTerms: '',
+    keyDates: [],
+  };
 
-            // Fallback – regex pass for NH PSA
-            if (rawText && !items.some(i => i.type === "inspection")) {
-                const m = rawText.match(inspChecklistRegex);
-                if (m) {
-                    items.push({
-                        type: "inspection",
-                        amount: null,
-                        offsetDays: Number(m[2]),
-                        anchorEvent: "Effective Date",
-                        absoluteDate: null
-                    });
-                }
-            }
+  items.forEach(it => {
+    if (it.type === 'closing' && it.absoluteDate) {
+      out.keyDates.push({ name: 'Closing', date: it.absoluteDate });
+    }
+    if (it.type === 'inspection' && it.absoluteDate) {
+      out.keyDates.push({ name: 'Inspection', date: it.absoluteDate });
+    }
+    if (it.type === 'deposit') {
+      out.keyDates.push({
+        name: `Deposit $${it.amount.toLocaleString()}`,
+        date: it.absoluteDate ||
+              `${it.offsetDays} days after ${it.anchorEvent}`
+      });
+    }
+  });
 
-            if (rawText && !items.some(i => i.type === "deposit")) {
-                for (const dep of rawText.matchAll(depositRegex)) {
-                const [, amt, offset, literal] = dep;
-                items.push({
-                    type: "deposit",
-                    amount: Number(amt.replace(/[,]/g, "")),
-                    offsetDays: offset ? Number(offset) : null,
-                    anchorEvent: offset ? "Acceptance" : null,
-                    absoluteDate: literal || null
-                });
-                }
-            }
-            
-            // Convert relative → absolute dates
-            const effDate = extractEffectiveDate(rawText);
-            if(effDate) {
-                items = items.map(i => {
-                    if (i.offsetDays && (i.anchorEvent === 'Effective Date' || i.anchorEvent === 'Acceptance')) {
-                        i.absoluteDate = resolveRelative(i.offsetDays, effDate);
-                    }
-                    return i;
-                });
-            }
-            */
-            
-            // Transform the AI's array data into the object the UI needs
-            contractData = buildLegacyObject(items); 
+
+  return out;
+}
+
+  // 3️⃣ Convert relative → absolute
+  const effDate = extractEffectiveDate(rawText);
+items = items.map(i => {
+  if (i.offsetDays && effDate) {
+    i.absoluteDate = resolveRelative(i.offsetDays, effDate);
+  }
+  return i;
+});
+
+// build the legacy object so the existing UI keeps working
+contractData = buildLegacyObject(items);   // transform array ➜ object
+displayResults(contractData);
 
             // 4. Populate the UI with Results
             console.log("Populating results...");
             
-            // const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "The Property";
-            // const keyDates = Array.isArray(contractData.keyDates) ? contractData.keyDates : [];
-            // const specialTermsText = contractData.specialTerms || '';
-            // const purchasePrice = contractData.purchasePrice ?
-            //     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(contractData.purchasePrice) :
-            //     'the agreed-upon price';
-            
-            // displayResults(contractData); // This function needs to be defined to display the data
-            // For now, let's manually populate the fields again as a placeholder
-             const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "The Property";
+            const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "The Property";
             const keyDates = Array.isArray(contractData.keyDates) ? contractData.keyDates : [];
             const specialTermsText = contractData.specialTerms || '';
             const purchasePrice = contractData.purchasePrice ?
@@ -664,14 +628,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.insertCell().textContent = kd.name;
                     try {
                         const dateCell = row.insertCell();
-                        // Only try to format if the date is not relative
-                        if (kd.date && !kd.date.includes('days after')) {
-                             dateCell.textContent = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
-                                year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-                            });
-                        } else {
-                            dateCell.textContent = kd.date; // show relative date as-is
-                        }
+                        dateCell.textContent = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
+                            year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+                        });
                     } catch {
                         row.insertCell().textContent = kd.date || 'Invalid Date';
                     }
@@ -684,14 +643,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             let keyDatesHtml = keyDates.map(kd => {
-                 let formattedDate;
-                 if (kd.date && !kd.date.includes('days after')) {
-                    formattedDate = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
-                        year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-                    });
-                 } else {
-                    formattedDate = kd.date;
-                 }
+                const formattedDate = new Date(kd.date + 'T00:00:00Z').toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
+                });
                 return `<li><strong>${kd.name}:</strong> ${formattedDate}</li>`;
             }).join('');
 
@@ -700,7 +654,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p>Hi ${clientInfo.clientNames},</p>
                 <p>Congratulations! We are officially under contract on ${finalPropertyAddress}!</p>
                 <p>Here's a quick rundown of the key dates and terms in the contract:</p>
-                <p>Purchase price is <strong>${purchasePrice}</strong>.</p>
+                <p>Purchase price is <strong>${purchasePrice}</strong>,</p>
                 <ul>${keyDatesHtml}</ul>
                 ${specialTermsText ? `<p><strong>Additional Terms:</strong> This contract includes a contingency that it's ${specialTermsText.toLowerCase()}</p>` : ''}
                 <p><strong>Next Steps:</strong> I'll be monitoring all these deadlines closely and will keep you informed every step of the way. You can also add these deadlines to your calendar using the links I've included here.</p>
@@ -718,43 +672,29 @@ document.addEventListener('DOMContentLoaded', () => {
             showStatus("✅ Analysis complete!", "success", 4000);
 
        } catch (error) {
-            console.error("❌ A critical error occurred during the process:", error);
-            showStatus("Error: " + error.message, "error", 15000);        
-       } finally {
+  console.error("❌ A critical error occurred during the process:", error);
+
+  showStatus("Error: " + error.message, "error", 15000);        
+        } finally {
             console.log("✅ Process finished. Hiding loader.");
             showLoader(false);
-       }
-    });
-
-    // --- Rich Text Copy Button Event Listener ---
-    copyEmailButton.addEventListener('click', () => {
-        try {
-            const htmlToCopy = emailPreviewEl.innerHTML;
-            const blobHtml = new Blob([htmlToCopy], { type: "text/html" });
-            const blobText = new Blob([emailPreviewEl.innerText], { type: "text/plain" });
-            const clipboardItem = new ClipboardItem({
-                "text/html": blobHtml,
-                "text/plain": blobText
-            });
-
-            navigator.clipboard.write([clipboardItem]).then(() => {
-                showStatus("✅ Formatted email copied to clipboard!", "success", 3000);
-            }).catch(err => {
-                console.error('Failed to copy using Clipboard API: ', err);
-                // Fallback for older browsers
-                const tempEl = document.createElement('textarea');
-                document.body.appendChild(tempEl);
-                tempEl.value = emailPreviewEl.innerText;
-                tempEl.select();
-                document.execCommand('copy');
-                document.body.removeChild(tempEl);
-                showStatus("✅ Email text copied (fallback)!", "success", 3000);
-            });
-        } catch(e) {
-            console.error('Copy to clipboard failed: ', e);
-            showStatus("❌ Oops! Could not copy email.", "error", 4000);
         }
     });
+
+    // --- Rich Text Copy Button Event Listener (Unchanged) ---
+    copyEmailButton.addEventListener('click', () => {
+        const htmlToCopy = emailPreviewEl.innerHTML;
+        navigator.clipboard.write([
+            new ClipboardItem({
+                "text/html": new Blob([htmlToCopy], { type: "text/html" }),
+                "text/plain": new Blob([emailPreviewEl.innerText], { type: "text/plain" })
+            })
+        ]).then(() => {
+            showStatus("✅ Formatted email copied to clipboard!", "success", 3000);
+        }).catch(err => {
+            console.error('Failed to copy HTML: ', err);
+            showStatus("❌ Oops! Could not copy email.", "error", 4000);
+        });
        
     // Initialize Feather Icons
     feather.replace();
