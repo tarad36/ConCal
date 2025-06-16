@@ -50,154 +50,161 @@
         </div>
     </div>
 
-    <script>
-        // Add DEBUG mode
-        const DEBUG = true; // Set to false in production
+<script>
+    // Add DEBUG mode
+    const DEBUG = true; // Set to false in production
+    
+    // Date calculation functions
+    function calculateRelativeDate(baseDate, description) {
+        const base = new Date(baseDate);
+        const lowerDesc = description.toLowerCase();
         
-        // Date calculation functions
-        function calculateRelativeDate(baseDate, description) {
-            const base = new Date(baseDate);
-            const lowerDesc = description.toLowerCase();
-            
-            // Extract number and unit from descriptions like "within 10 days of effective date"
-            const patterns = [
-                /within\s+(\d+)\s+(days?|business\s+days?)/i,
-                /(\d+)\s+(days?|business\s+days?)\s+(?:of|from|after)/i,
-                /by\s+(\d+)\s+(days?|business\s+days?)/i,
-                /no\s+later\s+than\s+(\d+)\s+(days?|business\s+days?)/i
-            ];
-            
-            for (const pattern of patterns) {
-                const match = description.match(pattern);
-                if (match) {
-                    const number = parseInt(match[1]);
-                    const isBusinessDays = match[2].includes('business');
-                    
-                    if (isBusinessDays) {
-                        return addBusinessDays(base, number);
-                    } else {
-                        base.setDate(base.getDate() + number);
-                        return base;
-                    }
+        // Extract number and unit from descriptions like "within 10 days of effective date"
+        const patterns = [
+            /within\s+(\d+)\s+(days?|business\s+days?)/i,
+            /(\d+)\s+(days?|business\s+days?)\s+(?:of|from|after)/i,
+            /by\s+(\d+)\s+(days?|business\s+days?)/i,
+            /no\s+later\s+than\s+(\d+)\s+(days?|business\s+days?)/i
+        ];
+        
+        for (const pattern of patterns) {
+            const match = description.match(pattern);
+            if (match) {
+                const number = parseInt(match[1]);
+                const isBusinessDays = match[2].includes('business');
+                
+                if (isBusinessDays) {
+                    return addBusinessDays(base, number);
+                } else {
+                    base.setDate(base.getDate() + number);
+                    return base;
                 }
             }
-            
-            return null;
         }
+        
+        return null;
+    }
 
-        function addBusinessDays(startDate, days) {
-            const date = new Date(startDate);
-            let daysAdded = 0;
-            
-            while (daysAdded < days) {
-                date.setDate(date.getDate() + 1);
-                // Skip weekends (0 = Sunday, 6 = Saturday)
-                if (date.getDay() !== 0 && date.getDay() !== 6) {
-                    daysAdded++;
-                }
+    function addBusinessDays(startDate, days) {
+        const date = new Date(startDate);
+        let daysAdded = 0;
+        
+        while (daysAdded < days) {
+            date.setDate(date.getDate() + 1);
+            // Skip weekends (0 = Sunday, 6 = Saturday)
+            if (date.getDay() !== 0 && date.getDay() !== 6) {
+                daysAdded++;
             }
-            
-            return date;
         }
+        
+        return date;
+    }
 
-        function formatDate(date) {
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            const year = date.getFullYear();
-            return `${month}/${day}/${year}`;
+    function formatDate(date) {
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${month}/${day}/${year}`;
+    }
+
+    function parseComplexDateDescription(description, effectiveDate) {
+        // Handle variations like "5 calendar days", "ten (10) business days", etc.
+        const variations = {
+            'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
+            'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
+            'fifteen': 15, 'twenty': 20, 'thirty': 30
+        };
+        
+        // Replace written numbers with digits
+        let normalized = description.toLowerCase();
+        for (const [word, num] of Object.entries(variations)) {
+            normalized = normalized.replace(new RegExp(`\\b${word}\\b`, 'g'), num);
         }
+        
+        // Extract parenthetical numbers like "ten (10)"
+        normalized = normalized.replace(/\w+\s*\((\d+)\)/g, '$1');
+        
+        return calculateRelativeDate(effectiveDate, normalized);
+    }
 
-        function parseComplexDateDescription(description, effectiveDate) {
-            // Handle variations like "5 calendar days", "ten (10) business days", etc.
-            const variations = {
-                'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
-                'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10,
-                'fifteen': 15, 'twenty': 20, 'thirty': 30
-            };
-            
-            // Replace written numbers with digits
-            let normalized = description.toLowerCase();
-            for (const [word, num] of Object.entries(variations)) {
-                normalized = normalized.replace(new RegExp(`\\b${word}\\b`, 'g'), num);
-            }
-            
-            // Extract parenthetical numbers like "ten (10)"
-            normalized = normalized.replace(/\w+\s*\((\d+)\)/g, '$1');
-            
-            return calculateRelativeDate(effectiveDate, normalized);
-        }
-
-        function validateAndEnrichContractData(data, clientInfo) {
-            // Use fallbacks for missing data
-            data.propertyAddress = data.propertyAddress || clientInfo.propertyAddressOptional || "Property Address Not Found";
-            
-            // Ensure dates are valid
+    function validateAndEnrichContractData(data, clientInfo) {
+        // Use fallbacks for missing data
+        data.propertyAddress = data.propertyAddress || clientInfo.propertyAddressOptional || "Property Address Not Found";
+        
+        // Ensure dates are valid
+        if (data.keyDates) {
             data.keyDates = data.keyDates.filter(kd => {
                 try {
-                    const date = new Date(kd.date);
-                    return !isNaN(date.getTime());
+                    if (kd.date) {
+                        const date = new Date(kd.date);
+                        return !isNaN(date.getTime());
+                    }
+                    return false;
                 } catch {
                     return false;
                 }
             });
-            
-            // Add client names if not in contract
-            if (!data.parties || !data.parties.buyer) {
-                data.parties = { buyer: clientInfo.clientNames };
-            }
-            
-            // Generate special terms summary if missing
-            if (!data.specialTerms && data.contingencies && data.contingencies.length > 0) {
-                data.specialTerms = "This contract includes the following contingencies: " + 
-                                   data.contingencies.map(c => c.type).join(", ");
-            }
-            
-            return data;
+        } else {
+            data.keyDates = [];
         }
+        
+        // Add client names if not in contract
+        if (!data.parties || !data.parties.buyer) {
+            data.parties = { buyer: clientInfo.clientNames };
+        }
+        
+        // Generate special terms summary if missing
+        if (!data.specialTerms && data.contingencies && data.contingencies.length > 0) {
+            data.specialTerms = "This contract includes the following contingencies: " + 
+                               data.contingencies.map(c => c.type).join(", ");
+        }
+        
+        return data;
+    }
 
-        async function callGeminiAPI(prompt, pdfBase64) {
-            const API_KEY = 'AIzaSyCobwBNmNDqs2vM2FF0IsaOl4PJLmJC1zA';
-            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    async function callGeminiAPI(prompt, pdfBase64) {
+        const API_KEY = 'AIzaSyCobwBNmNDqs2vM2FF0IsaOl4PJLmJC1zA';
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
-            const requestBody = {
-                contents: [{
-                    parts: [
-                        { text: prompt },
-                        {
-                            inlineData: {
-                                mimeType: "application/pdf",
-                                data: pdfBase64
-                            }
+        const requestBody = {
+            contents: [{
+                parts: [
+                    { text: prompt },
+                    {
+                        inlineData: {
+                            mimeType: "application/pdf",
+                            data: pdfBase64
                         }
-                    ]
-                }]
-            };
+                    }
+                ]
+            }]
+        };
 
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody)
-            });
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+        });
 
-            if (!response.ok) {
-                throw new Error(`API request failed: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            return data.candidates[0].content.parts[0].text;
+        if (!response.ok) {
+            throw new Error(`API request failed: ${response.statusText}`);
         }
 
-        async function analyzePDF(file, clientInfo) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                
-                reader.onload = async function(e) {
-                    try {
-                        const base64File = e.target.result.split(',')[1];
-                        
-                        const prompt = `
+        const data = await response.json();
+        return data.candidates[0].content.parts[0].text;
+    }
+
+    async function analyzePDF(file, clientInfo) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            
+            reader.onload = async function(e) {
+                try {
+                    const base64File = e.target.result.split(',')[1];
+                    
+                    const prompt = `
 You are an expert real estate contract analyzer. Extract ALL critical information from this contract.
 
 CRITICAL: For relative dates (e.g., "within 10 days of effective date"), include both the description AND calculate the actual date.
@@ -255,176 +262,182 @@ For relative dates like "within 10 days of effective date":
 Return ONLY valid JSON, no explanations or markdown.
 `;
 
-                        const aiResponseText = await callGeminiAPI(prompt, base64File);
+                    const aiResponseText = await callGeminiAPI(prompt, base64File);
+                    
+                    if (DEBUG) {
+                        console.log("Raw AI Response:", aiResponseText);
+                    }
+                    
+                    // Better JSON extraction
+                    let contractData;
+                    try {
+                        // Remove any markdown formatting
+                        const jsonMatch = aiResponseText.match(/```json\s*([\s\S]*?)```/i) || 
+                                          aiResponseText.match(/```\s*([\s\S]*?)```/i);
+                        const jsonText = jsonMatch ? jsonMatch[1].trim() : aiResponseText.trim();
+                        
+                        // Clean up common JSON issues
+                        const cleanedJson = jsonText
+                            .replace(/,\s*}/g, '}')  // Remove trailing commas
+                            .replace(/,\s*]/g, ']')
+                            .replace(/[\u201C\u201D]/g, '"')  // Replace smart quotes
+                            .replace(/[\u2018\u2019]/g, "'");
+                        
+                        contractData = JSON.parse(cleanedJson);
                         
                         if (DEBUG) {
-                            console.log("Raw AI Response:", aiResponseText);
+                            console.log("Parsed Data:", contractData);
                         }
                         
-                        // Better JSON extraction
-                        let contractData;
-                        try {
-                            // Remove any markdown formatting
-                            const jsonMatch = aiResponseText.match(/```json\s*([\s\S]*?)```/i) || 
-                                              aiResponseText.match(/```\s*([\s\S]*?)```/i);
-                            const jsonText = jsonMatch ? jsonMatch[1].trim() : aiResponseText.trim();
-                            
-                            // Clean up common JSON issues
-                            const cleanedJson = jsonText
-                                .replace(/,\s*}/g, '}')  // Remove trailing commas
-                                .replace(/,\s*]/g, ']')
-                                .replace(/[\u201C\u201D]/g, '"')  // Replace smart quotes
-                                .replace(/[\u2018\u2019]/g, "'");
-                            
-                            contractData = JSON.parse(cleanedJson);
-                            
-                            if (DEBUG) {
-                                console.log("Parsed Data:", contractData);
-                            }
-                            
-                            // Process relative dates for both keyDates and deposits
-                            const effectiveDate = contractData.effectiveDate;
-                            const closingDate = contractData.closingDate;
+                        // Process relative dates for both keyDates and deposits
+                        const effectiveDate = contractData.effectiveDate;
+                        const closingDate = contractData.closingDate;
 
-                            // Calculate actual dates for relative dates
-                            if (contractData.keyDates) {
-                                contractData.keyDates = contractData.keyDates.map(kd => {
-                                    if (!kd.date && kd.relativeDays && kd.relativeFrom) {
-                                        const baseDate = kd.relativeFrom === 'closing' ? closingDate : effectiveDate;
-                                        if (baseDate) {
-                                            const calculatedDate = calculateRelativeDate(
-                                                baseDate, 
-                                                `within ${kd.relativeDays} ${kd.relativeType || 'calendar'} days`
-                                            );
-                                            if (calculatedDate) {
-                                                kd.date = formatDate(calculatedDate);
-                                                kd.description = `${kd.description} (${kd.relativeDays} ${kd.relativeType || 'calendar'} days from ${kd.relativeFrom} date)`;
-                                            }
+                        // Calculate actual dates for relative dates
+                        if (contractData.keyDates) {
+                            contractData.keyDates = contractData.keyDates.map(kd => {
+                                if (!kd.date && kd.relativeDays && kd.relativeFrom) {
+                                    const baseDate = kd.relativeFrom === 'closing' ? closingDate : effectiveDate;
+                                    if (baseDate) {
+                                        const calculatedDate = calculateRelativeDate(
+                                            baseDate, 
+                                            `within ${kd.relativeDays} ${kd.relativeType || 'calendar'} days`
+                                        );
+                                        if (calculatedDate) {
+                                            kd.date = formatDate(calculatedDate);
+                                            kd.description = `${kd.description} (${kd.relativeDays} ${kd.relativeType || 'calendar'} days from ${kd.relativeFrom} date)`;
                                         }
                                     }
-                                    return kd;
-                                });
-                            }
+                                }
+                                return kd;
+                            });
+                        }
 
-                            // Process deposits with relative dates
-                            if (contractData.deposits) {
-                                contractData.deposits = contractData.deposits.map(dep => {
-                                    if (!dep.dueDate && dep.relativeDays && dep.relativeFrom) {
-                                        const baseDate = dep.relativeFrom === 'closing' ? closingDate : effectiveDate;
-                                        if (baseDate) {
-                                            const calculatedDate = calculateRelativeDate(
-                                                baseDate, 
-                                                `within ${dep.relativeDays} ${dep.relativeType || 'calendar'} days`
-                                            );
-                                            if (calculatedDate) {
-                                                dep.dueDate = formatDate(calculatedDate);
-                                                dep.description = `${dep.description} (${dep.relativeDays} ${dep.relativeType || 'calendar'} days from ${dep.relativeFrom} date)`;
-                                            }
+                        // Process deposits with relative dates
+                        if (contractData.deposits) {
+                            contractData.deposits = contractData.deposits.map(dep => {
+                                if (!dep.dueDate && dep.relativeDays && dep.relativeFrom) {
+                                    const baseDate = dep.relativeFrom === 'closing' ? closingDate : effectiveDate;
+                                    if (baseDate) {
+                                        const calculatedDate = calculateRelativeDate(
+                                            baseDate, 
+                                            `within ${dep.relativeDays} ${dep.relativeType || 'calendar'} days`
+                                        );
+                                        if (calculatedDate) {
+                                            dep.dueDate = formatDate(calculatedDate);
+                                            dep.description = `${dep.description} (${dep.relativeDays} ${dep.relativeType || 'calendar'} days from ${dep.relativeFrom} date)`;
                                         }
                                     }
-                                    return dep;
-                                });
-                                
-                                // Add deposits to keyDates for unified handling
-                                contractData.deposits.forEach(dep => {
-                                    if (dep.dueDate) {
-                                        contractData.keyDates.push({
-                                            name: `${dep.name}: $${dep.amount.toLocaleString()}`,
-                                            date: dep.dueDate,
-                                            description: dep.description || `Deposit due`,
-                                            isDeposit: true,
-                                            amount: dep.amount
-                                        });
-                                    }
-                                });
-                            }
+                                }
+                                return dep;
+                            });
+                            
+                            // Add deposits to keyDates for unified handling
+                            contractData.deposits.forEach(dep => {
+                                if (dep.dueDate) {
+                                    contractData.keyDates.push({
+                                        name: `${dep.name}: $${dep.amount.toLocaleString()}`,
+                                        date: dep.dueDate,
+                                        description: dep.description || `Deposit due`,
+                                        isDeposit: true,
+                                        amount: dep.amount
+                                    });
+                                }
+                            });
+                        }
 
-                            // Sort all dates chronologically
+                        // Sort all dates chronologically
+                        if (contractData.keyDates && contractData.keyDates.length > 0) {
                             contractData.keyDates.sort((a, b) => new Date(a.date) - new Date(b.date));
-                            
-                            if (DEBUG) {
-                                console.log("Key Dates Found:", contractData.keyDates);
-                            }
-                            
-                            // Validate and enrich the data
-                            contractData = validateAndEnrichContractData(contractData, clientInfo);
-                            
-                            resolve(contractData);
-                            
-                        } catch (parseError) {
-                            console.error("JSON parsing error:", parseError);
-                            reject(new Error("Failed to parse contract data. Please try again."));
                         }
                         
-                    } catch (error) {
-                        console.error("Error analyzing PDF:", error);
-                        reject(error);
+                        if (DEBUG) {
+                            console.log("Key Dates Found:", contractData.keyDates);
+                        }
+                        
+                        // Validate and enrich the data
+                        contractData = validateAndEnrichContractData(contractData, clientInfo);
+                        
+                        resolve(contractData);
+                        
+                    } catch (parseError) {
+                        console.error("JSON parsing error:", parseError);
+                        reject(new Error("Failed to parse contract data. Please try again."));
                     }
-                };
-                
-                reader.onerror = function() {
-                    reject(new Error("Failed to read PDF file"));
-                };
-                
-                reader.readAsDataURL(file);
-            });
-        }
-
-        function generateCalendarLink(event, clientInfo) {
-            const date = new Date(event.date);
-            const startDate = date.toISOString().replace(/-|:|\.\d\d\d/g, '');
-            const endDate = new Date(date.getTime() + 60 * 60 * 1000).toISOString().replace(/-|:|\.\d\d\d/g, '');
-            
-            const details = `${event.description}\n\nClient: ${clientInfo.clientNames}`;
-            
-            const googleUrl = `https://calendar.google.com/calendar/r/eventedit?text=${encodeURIComponent(event.name)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(details)}`;
-            
-            return googleUrl;
-        }
-
-        function generateKeyDatesHtml(keyDates, clientInfo) {
-            return keyDates.map(kd => {
-                const isDeposit = kd.isDeposit || kd.name.includes('Deposit');
-                const emoji = isDeposit ? '💰' : '📋';
-                const importance = isDeposit ? ' style="font-weight: bold; color: #d9534f;"' : '';
-                
-                const calendarLink = generateCalendarLink({
-                    name: kd.name,
-                    date: kd.date,
-                    description: kd.description + (isDeposit ? ` - Amount: $${kd.amount?.toLocaleString() || 'See contract'}` : '')
-                }, clientInfo);
-                
-                return `<li${importance}>${emoji} <strong>${kd.name}</strong>: ${kd.date} 
-                        <a href="${calendarLink}" target="_blank">📅 Add to Calendar</a>
-                        ${kd.description ? `<br><em style="font-size: 0.9em; color: #666;">${kd.description}</em>` : ''}
-                        </li>`;
-            }).join('\n');
-        }
-
-        function generateEmailContent(contractData, clientInfo) {
-            const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "Property Address";
-            const purchasePrice = contractData.purchasePrice ? `$${contractData.purchasePrice.toLocaleString()}` : "See Contract";
-            
-            const keyDatesHtml = generateKeyDatesHtml(contractData.keyDates || [], clientInfo);
-            const specialTermsText = contractData.specialTerms || "";
-            
-            // Generate deposits section for email
-            const depositsHtml = contractData.deposits && contractData.deposits.length > 0 ? 
-                contractData.deposits.map(dep => {
-                    const amount = `$${dep.amount.toLocaleString()}`;
-                    const dueDate = dep.dueDate || 'Date to be calculated';
-                    const calendarLink = dep.dueDate ? 
-                        `<a href="${generateCalendarLink({
-                            name: `${dep.name} Due`,
-                            date: dep.dueDate,
-                            description: `${dep.name} payment of ${amount} is due today. ${dep.description || ''}`
-                        }, clientInfo)}" target="_blank">📅 Add to Calendar</a>` : '';
                     
-                    return `<li><strong>${dep.name}:</strong> ${amount} due ${dueDate} ${calendarLink}<br>
-                            <em style="font-size: 0.9em; color: #666;">${dep.description || ''}</em></li>`;
-                }).join('\n') : '';
+                } catch (error) {
+                    console.error("Error analyzing PDF:", error);
+                    reject(error);
+                }
+            };
             
-            const emailBody = `
+            reader.onerror = function() {
+                reject(new Error("Failed to read PDF file"));
+            };
+            
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function generateCalendarLink(event, clientInfo) {
+        const date = new Date(event.date);
+        const startDate = date.toISOString().replace(/-|:|\.\d\d\d/g, '');
+        const endDate = new Date(date.getTime() + 60 * 60 * 1000).toISOString().replace(/-|:|\.\d\d\d/g, '');
+        
+        const details = `${event.description}\n\nClient: ${clientInfo.clientNames}`;
+        
+        const googleUrl = `https://calendar.google.com/calendar/r/eventedit?text=${encodeURIComponent(event.name)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(details)}`;
+        
+        return googleUrl;
+    }
+
+    function generateKeyDatesHtml(keyDates, clientInfo) {
+        if (!keyDates || keyDates.length === 0) {
+            return '<li>No key dates found in contract</li>';
+        }
+        
+        return keyDates.map(kd => {
+            const isDeposit = kd.isDeposit || kd.name.includes('Deposit');
+            const emoji = isDeposit ? '💰' : '📋';
+            const importance = isDeposit ? ' style="font-weight: bold; color: #d9534f;"' : '';
+            
+            const calendarLink = generateCalendarLink({
+                name: kd.name,
+                date: kd.date,
+                description: kd.description + (isDeposit ? ` - Amount: $${kd.amount?.toLocaleString() || 'See contract'}` : '')
+            }, clientInfo);
+            
+            return `<li${importance}>${emoji} <strong>${kd.name}</strong>: ${kd.date} 
+                    <a href="${calendarLink}" target="_blank">📅 Add to Calendar</a>
+                    ${kd.description ? `<br><em style="font-size: 0.9em; color: #666;">${kd.description}</em>` : ''}
+                    </li>`;
+        }).join('\n');
+    }
+
+    function generateEmailContent(contractData, clientInfo) {
+        const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "Property Address";
+        const purchasePrice = contractData.purchasePrice ? `$${contractData.purchasePrice.toLocaleString()}` : "See Contract";
+        
+        const keyDatesHtml = generateKeyDatesHtml(contractData.keyDates || [], clientInfo);
+        const specialTermsText = contractData.specialTerms || "";
+        
+        // Generate deposits section for email
+        const depositsHtml = contractData.deposits && contractData.deposits.length > 0 ? 
+            contractData.deposits.map(dep => {
+                const amount = `$${dep.amount.toLocaleString()}`;
+                const dueDate = dep.dueDate || 'Date to be calculated';
+                const calendarLink = dep.dueDate ? 
+                    `<a href="${generateCalendarLink({
+                        name: `${dep.name} Due`,
+                        date: dep.dueDate,
+                        description: `${dep.name} payment of ${amount} is due today. ${dep.description || ''}`
+                    }, clientInfo)}" target="_blank">📅 Add to Calendar</a>` : '';
+                
+                return `<li><strong>${dep.name}:</strong> ${amount} due ${dueDate} ${calendarLink}<br>
+                        <em style="font-size: 0.9em; color: #666;">${dep.description || ''}</em></li>`;
+            }).join('\n') : '';
+        
+        const emailBody = `
 <p>Hi ${clientInfo.clientNames},</p>
 <p>Congratulations! We are officially under contract on <strong>${finalPropertyAddress}</strong>!</p>
 <p>Here's your contract summary:</p>
@@ -452,14 +465,15 @@ Please ensure all deposits are ready by their due dates.</p>
 <hr>
 <p><em>Questions? Reply to this email or call me anytime!</em></p>
 `;
-            
-            return {
-                subject: `Contract Executed - ${finalPropertyAddress}`,
-                body: emailBody,
-                recipients: clientInfo.clientEmails,
-                propertyAddress: finalPropertyAddress
-            };
-        }
+        
+        return {
+            subject: `Contract Executed - ${finalPropertyAddress}`,
+            body: emailBody,
+            recipients: clientInfo.clientEmails,
+            propertyAddress: finalPropertyAddress
+        };
+    }
+
 
         // Form submission handler
         document.getElementById('contractForm').addEventListener('submit', async (e) => {
