@@ -564,7 +564,7 @@ Return ONLY valid JSON, no extra text.
             showStatus("AI response received. Parsing results...", "info");
             const match = aiResponseText.match(/```json\s*([\s\S]*?)```/i);
             const cleanedJsonText = match ? match[1].trim() : aiResponseText.trim();
-            
+             
           
 // ---------- helper: convert items[] to the object the old UI expects ------
 function buildLegacyObject(items) {
@@ -588,8 +588,8 @@ function buildLegacyObject(items) {
         date: it.absoluteDate ||
               `${it.offsetDays} days after ${it.anchorEvent}`
       });
-    }
   });
+}
 
   return out;
 }
