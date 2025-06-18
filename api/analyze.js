@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { prompt, base64pdf } = req.body;
+  const { prompt, pdfBase64 } = req.body; // 🛠 also fix the key name here
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
             {
               parts: [
                 { text: prompt },
-                { inlineData: { mimeType: 'application/pdf', data: base64pdf } }
+                { inlineData: { mimeType: 'application/pdf', data: pdfBase64 } }
               ]
             }
           ]
@@ -30,8 +30,13 @@ export default async function handler(req, res) {
     );
 
     const data = await response.json();
-    res.status(200).json(data);
+
+    // ✅ Safely extract Gemini response text
+    const resultText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+    res.status(200).json({ text: resultText });
   } catch (error) {
+    console.error("Gemini API error:", error);
     res.status(500).json({ error: error.message || 'Something went wrong' });
   }
 }
