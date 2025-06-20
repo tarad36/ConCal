@@ -319,7 +319,7 @@
         <div id="resultsDiv" style="display: none;">
             <h2>✅ Contract Analysis Results</h2>
             <div id="emailPreview"></div>
-            <button id="sendEmailBtn">📧 Send Email</button>
+           <button id="sendEmailBtn">📋 Copy Email Content</button>
         </div>
     </div>
 
@@ -754,7 +754,28 @@ Return ONLY valid JSON, no explanations or markdown.
                     </li>`;
         }).join('\n');
     }
-
+function fixGrammar(text) {
+    if (!text) return text;
+    
+    // Fix sentence capitalization
+    text = text.replace(/(?:^|\. )([a-z])/g, (match, p1) => match.toUpperCase());
+    
+    // Fix i to I
+    text = text.replace(/\bi\b/g, 'I');
+    
+    // Ensure periods at end of sentences
+    text = text.replace(/([a-zA-Z0-9])(\s*<\/li>)/g, '$1.$2');
+    text = text.replace(/([a-zA-Z0-9])(\s*<\/p>)/g, '$1.$2');
+    
+    // Fix common real estate terms capitalization
+    const properNouns = ['buyer', 'seller', 'earnest money', 'closing', 'inspection'];
+    properNouns.forEach(term => {
+        const regex = new RegExp(`\\b${term}\\b`, 'gi');
+        text = text.replace(regex, match => term.charAt(0).toUpperCase() + term.slice(1));
+    });
+    
+    return text;
+}
     function generateEmailContent(contractData, clientInfo) {
         const finalPropertyAddress = contractData.propertyAddress || clientInfo.propertyAddressOptional || "Property Address";
         const purchasePrice = contractData.purchasePrice ? `$${contractData.purchasePrice.toLocaleString()}` : "See Contract";
@@ -815,11 +836,11 @@ Please ensure all deposits are ready by their due dates.</p>
 `;
         
         return {
-            subject: `Contract Executed - ${finalPropertyAddress}`,
-            body: emailBody,
-            recipients: clientInfo.clientEmails,
-            propertyAddress: finalPropertyAddress
-        };
+    subject: fixGrammar(`Contract Executed - ${finalPropertyAddress}`),
+    body: fixGrammar(emailBody),
+    recipients: clientInfo.clientEmails,
+    propertyAddress: finalPropertyAddress
+};
     }
 
     // Form submission handler
@@ -829,7 +850,6 @@ Please ensure all deposits are ready by their due dates.</p>
         const fileInput = document.getElementById('contractFile');
         const clientInfo = {
             clientNames: document.getElementById('clientNames').value,
-            clientEmails: document.getElementById('clientEmails').value,
             propertyAddressOptional: document.getElementById('propertyAddressOptional').value
         };
         
@@ -874,15 +894,45 @@ Please ensure all deposits are ready by their due dates.</p>
     });
     
     // Email sending handler
-    document.getElementById('sendEmailBtn').addEventListener('click', async () => {
-        if (window.currentEmailContent) {
-            const subject = encodeURIComponent(window.currentEmailContent.subject);
-            const body = encodeURIComponent(window.currentEmailContent.body.replace(/<[^>]*>/g, ''));
-            const mailtoLink = `mailto:${window.currentEmailContent.recipients}?subject=${subject}&body=${body}`;
+    // Replace the email sending handler with this:
+document.getElementById('sendEmailBtn').addEventListener('click', async () => {
+    if (window.currentEmailContent) {
+        // Create a text version with working links
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = window.currentEmailContent.body;
+        
+        // Convert HTML to text but preserve links
+        const textContent = tempDiv.innerHTML;
+        
+        // Copy to clipboard
+        try {
+            await navigator.clipboard.writeText(textContent);
             
-            window.open(mailtoLink, '_blank');
+            // Change button temporarily to show success
+            const btn = document.getElementById('sendEmailBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Copied to Clipboard!';
+            btn.style.background = 'linear-gradient(135deg, #48bb78 0%, #38a169 100%)';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+            }, 2000);
+            
+            alert('Email content copied to clipboard! Paste it into your email client.');
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+            // Fallback - select the text
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(document.getElementById('emailPreview'));
+            selection.removeAllRanges();
+            selection.addRange(range);
+            alert('Please copy the selected text (Ctrl+C or Cmd+C) and paste into your email client.');
         }
-    });
+    }
+});
+      
 </script>
 </body>
 </html>
