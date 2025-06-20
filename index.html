@@ -292,15 +292,11 @@
             <h3>👥 Client Information</h3>
             
             <div class="form-group">
-                <label for="clientNames">Client Name(s):</label>
+                <label for="clientNames">Client First Name(s):</label>
                 <input type="text" id="clientNames" placeholder="John and Jane Doe" required>
             </div>
             
-            <div class="form-group">
-                <label for="clientEmails">Client Email(s):</label>
-                <input type="text" id="clientEmails" placeholder="john@email.com, jane@email.com" required>
-            </div>
-            
+           
             <div class="form-group">
                 <label for="propertyAddressOptional">Property Address (if known):</label>
                 <input type="text" id="propertyAddressOptional" placeholder="123 Main St, City, ST 12345">
@@ -838,7 +834,7 @@ Please ensure all deposits are ready by their due dates.</p>
         return {
     subject: fixGrammar(`Contract Executed - ${finalPropertyAddress}`),
     body: fixGrammar(emailBody),
-    recipients: clientInfo.clientEmails,
+   
     propertyAddress: finalPropertyAddress
 };
     }
@@ -894,19 +890,33 @@ Please ensure all deposits are ready by their due dates.</p>
     });
     
     // Email sending handler
-    // Replace the email sending handler with this:
-document.getElementById('sendEmailBtn').addEventListener('click', async () => {
+   document.getElementById('sendEmailBtn').addEventListener('click', async () => {
     if (window.currentEmailContent) {
-        // Create a text version with working links
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = window.currentEmailContent.body;
-        
-        // Convert HTML to text but preserve links
-        const textContent = tempDiv.innerHTML;
-        
-        // Copy to clipboard
         try {
-            await navigator.clipboard.writeText(textContent);
+            // Create a temporary element to hold the HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = window.currentEmailContent.body;
+            
+            // Create a selection range
+            const selection = window.getSelection();
+            const range = document.createRange();
+            
+            // Add the temp div to the page (hidden)
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            document.body.appendChild(tempDiv);
+            
+            // Select the content
+            range.selectNodeContents(tempDiv);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            // Copy to clipboard
+            document.execCommand('copy');
+            
+            // Clean up
+            document.body.removeChild(tempDiv);
+            selection.removeAllRanges();
             
             // Change button temporarily to show success
             const btn = document.getElementById('sendEmailBtn');
@@ -919,16 +929,9 @@ document.getElementById('sendEmailBtn').addEventListener('click', async () => {
                 btn.style.background = '';
             }, 2000);
             
-            alert('Email content copied to clipboard! Paste it into your email client.');
         } catch (err) {
             console.error('Failed to copy text: ', err);
-            // Fallback - select the text
-            const selection = window.getSelection();
-            const range = document.createRange();
-            range.selectNodeContents(document.getElementById('emailPreview'));
-            selection.removeAllRanges();
-            selection.addRange(range);
-            alert('Please copy the selected text (Ctrl+C or Cmd+C) and paste into your email client.');
+            alert('Failed to copy. Please select the email content and copy manually.');
         }
     }
 });
